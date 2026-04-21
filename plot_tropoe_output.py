@@ -143,6 +143,17 @@ def align_to(da, db):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def plot_time_height(data, out_prefix):
+    """
+    Produces *_time_height.png
+    Two colour-filled contour plots stacked vertically, sharing a time axis. The top panel shows temperature in °C and
+    the bottom shows water vapour mixing ratio in g/kg, both as a function of time (x-axis) and height above ground
+    (y-axis). This is the standard way to visualise a day's worth of profiling data — you can immediately see things
+    like the diurnal temperature cycle, the growth of the boundary layer, and where moisture is concentrated.
+    The colourmaps are chosen deliberately: RdBu_r for temperature (red = warm, blue = cold) and YlGnBu for moisture.
+    :param data:
+    :param out_prefix: *
+    :return:
+    """
     fig, axes = plt.subplots(2, 1, figsize=(12, 8), sharex=True)
     fig.suptitle('TROPoe — Time/Height Cross-sections', fontsize=13)
     times = mdates.date2num(data['timestamps'])
@@ -167,6 +178,15 @@ def plot_time_height(data, out_prefix):
 
 
 def plot_lwp(data, out_prefix):
+    """
+    Produces *_lwp.png
+    A simple time series of liquid water path (g/m²) with ±1σ uncertainty shading. LWP tells you whether there's cloud
+    liquid water overhead. Values near zero mean clear sky; positive values indicate cloud. The uncertainty band comes
+    directly from TROPoe's posterior covariance — one of the things TROPoe does that the manufacturer retrieval doesn't.
+    :param data:
+    :param out_prefix: *
+    :return:
+    """
     fig, ax = plt.subplots(figsize=(12, 3))
     times = mdates.date2num(data['timestamps'])
     ax.plot(times, data['lwp'], 'k-', lw=1, label='LWP')
@@ -185,6 +205,17 @@ def plot_lwp(data, out_prefix):
 
 
 def plot_profile_with_uncertainty(data, target_hour, out_prefix):
+    """
+    Produces *_profile_NNNN.png
+    Two side-by-side vertical profiles (temperature left, water vapour right) at a single moment in time — whichever
+    hour you set in PROFILE_TIME. The solid line is the retrieved profile and the shading is ±1σ uncertainty.
+    The four-digit number in the filename is the time index. This is useful for a quick sanity check and for
+    illustrating what the retrieval looks like at a particular moment.
+    :param data:
+    :param target_hour: NNNN
+    :param out_prefix: *
+    :return:
+    """
     idx = nearest_idx(data, target_hour)
     t_str = data['timestamps'][idx].strftime('%Y-%m-%d %H:%M UTC')
     H = data['height']
@@ -211,6 +242,23 @@ def plot_profile_with_uncertainty(data, target_hour, out_prefix):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def plot_compare_profiles(da, db, label_a, label_b, target_hour, out_prefix):
+    """
+    Produces *_compare_profiles.png
+    A 3×3 grid of profile panels, both datasets overlaid in the same axes at your chosen PROFILE_TIME. The solid line
+    is always File A, dashed is File B, with uncertainty shading where available. The nine panels cover: temperature,
+    water vapour, relative humidity, dew point, potential temperature, equivalent potential temperature, vertical
+    resolution of T, vertical resolution of WV, and cumulative degrees of freedom for signal in temperature. The last
+    two rows are particularly interesting scientifically — vertical resolution tells you how sharp the retrieval
+    actually is at each level (the retrieval grid and the true resolution are not the same thing), and cumulative
+    DFS tells you how much of the information content in the profiles comes from below each height level.
+    :param da:
+    :param db:
+    :param label_a:
+    :param label_b:
+    :param target_hour:
+    :param out_prefix: *
+    :return:
+    """
     ia = nearest_idx(da, target_hour)
     ib = nearest_idx(db, target_hour)
     t_str = da['timestamps'][ia].strftime('%Y-%m-%d %H:%M UTC')
@@ -261,6 +309,21 @@ def plot_compare_profiles(da, db, label_a, label_b, target_hour, out_prefix):
 
 
 def plot_compare_timeseries(da, db, label_a, label_b, out_prefix):
+    """
+    Produces *_compare_timeseries.png
+    All the 1D (time-only) variables stacked as separate subplots, both datasets on each panel. Covers: LWP,
+    precipitable water vapour, planetary boundary layer height, stable boundary layer inversion height and magnitude,
+    surface-based and mixed-layer LCL/CAPE/CIN, cloud base height, RMSa, RMSp, and Shannon information content.
+    This is useful for spotting systematic offsets or periods where the two retrievals diverge. The RMSa panel is
+    particularly worth watching — it tells you how well each retrieval fits its own observations, so if one is
+    consistently higher it may be struggling.
+    :param da:
+    :param db:
+    :param label_a:
+    :param label_b:
+    :param out_prefix: *
+    :return:
+    """
     panels = [
         ('lwp', 'LWP (g/m²)', True),
         ('pwv', 'PWV (cm)', False),
@@ -315,6 +378,20 @@ def plot_compare_timeseries(da, db, label_a, label_b, out_prefix):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def plot_diff_timehgt(da, db_a, label_a, label_b, out_prefix):
+    """
+    Produces *_diff_timehgt.png
+    Time/height colour maps showing File A minus File B for the 2D profile variables: temperature, water vapour,
+    RH, potential temperature, equivalent potential temperature, and vertical resolution. The colourmap is always
+    diverging and centred on zero (RdBu_r), so red means A is larger than B, blue means B is larger than A, and
+    white means they agree. This is the clearest way to see whether differences are systematic (a persistent colour)
+    or random (patchy), and whether they're height-dependent.
+    :param da:
+    :param db_a:
+    :param label_a:
+    :param label_b:
+    :param out_prefix: *
+    :return:
+    """
     panels = [
         ('temp', 'Temperature diff (°C)', (-5, 5)),
         ('wv', 'Water Vapour diff (g/kg)', (-2, 2)),
@@ -355,6 +432,19 @@ def plot_diff_timehgt(da, db_a, label_a, label_b, out_prefix):
 
 
 def plot_diff_timeseries(da, db_a, label_a, label_b, out_prefix):
+    """
+    Produces *_diff_timeseries.png
+    The same idea but for all the 1D variables — a time series of A minus B for each one. The zero line is marked as a
+    dashed grey reference. Each panel has the mean difference and standard deviation annotated in the corner,
+    which gives you an at-a-glance quantitative summary. If you end up writing a paper, these numbers are likely
+    to appear in a results table.
+    :param da:
+    :param db_a:
+    :param label_a:
+    :param label_b:
+    :param out_prefix: *
+    :return:
+    """
     panels = [
         ('lwp', 'LWP diff (g/m²)'),
         ('pwv', 'PWV diff (cm)'),
@@ -402,6 +492,21 @@ def plot_diff_timeseries(da, db_a, label_a, label_b, out_prefix):
 
 
 def plot_diff_mean_profile(da, db_a, label_a, label_b, out_prefix):
+    """
+    Produces *_diff_mean_profile.png
+    Probably the most paper-ready of all the plots. Two panels (temperature and water vapour), each showing the
+    mean difference profile — averaged over the whole time period — as a single bold line, with ±1 standard
+    deviation as medium shading and the 10th–90th percentile range as lighter shading. The zero line is marked
+    for reference. This collapses the whole day into a single summary of how the two retrievals differ as a
+    function of height, and directly answers the question "do these two retrievals agree, and if not, at what
+    heights and by how much?".
+    :param da:
+    :param db_a:
+    :param label_a:
+    :param label_b:
+    :param out_prefix: *
+    :return:
+    """
     fig, axes = plt.subplots(1, 2, figsize=(9, 9), sharey=True)
     fig.suptitle(f'Mean Profile Difference: {label_a} minus {label_b}\n'
                  f'(shading = ±1 std;  whiskers = 10th–90th percentile)', fontsize=11)
