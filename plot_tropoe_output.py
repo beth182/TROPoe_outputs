@@ -25,8 +25,6 @@ from scipy.interpolate import interp1d
 import netCDF4 as nc
 
 
-
-
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
@@ -454,8 +452,6 @@ FILE_B = 'I:/User/Documents/Research/Running_TROPoe/Download from Dave/beth_saun
 LABEL_A = 'Beth'
 LABEL_B = 'Dave'
 
-
-
 PROFILE_TIME = 12.0  # UTC hour for single-profile plot; None = midpoint of file
 OUT_PREFIX = 'tropoe'
 
@@ -464,7 +460,6 @@ H_MAX_WV = 6.0  # height ceiling for moisture plots (km)
 
 COL_A = 'steelblue'
 COL_B = 'tomato'
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # RUN
