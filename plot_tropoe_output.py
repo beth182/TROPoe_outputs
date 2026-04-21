@@ -426,8 +426,8 @@ def plot_diff_timehgt(da, db_a, label_a, label_b, out_prefix):
         ax.tick_params(labelsize=8)
 
     fmt_xaxis(axes[-1]);
-    fig.autofmt_xdate();
-    plt.tight_layout()
+    fig.autofmt_xdate()
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
     _save(fig, f'{out_prefix}_diff_timehgt.png')
 
 
