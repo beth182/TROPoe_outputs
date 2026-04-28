@@ -1,0 +1,36 @@
+# Site config for HATPRO at Innsbruck, Austria
+
+type: hatpro
+
+params:
+  latitude: 47.2643
+  longitude: 11.3853
+  altitude: 612.
+
+  path_to_cal:
+
+  scan_time: 50.
+
+  path_to_lidar:
+  lidar_model:
+
+global_specs:
+  title: HATPRO MWR at Innsbruck, Austria
+  institution: University of Innsbruck
+  site_location: innsbruck
+  instrument_id: A
+  wigos_station_id:
+  principal_investigator:
+  instrument_generation: G5
+  instrument_hw_id:
+  network_name:
+  campaign_name:
+  comment:
+  references:
+  history:
+  license:
+  instrument_history:
+  ir_instrument_fabrication_year:
+  ir_instrument_history:
+  met_instrument_fabrication_year:
+  met_instrument_history:
