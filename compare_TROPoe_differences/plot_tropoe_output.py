@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from scipy.interpolate import interp1d
 import netCDF4 as nc
 
+# TODO: move out all single visualisation functions to separate place to be used again
+# TODO: Change save plot function locations to plot directory
 
 # ══════════════════════════════════════════════════════════════════════════════
 # HELPERS
