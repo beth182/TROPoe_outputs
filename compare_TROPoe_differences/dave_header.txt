@@ -1,0 +1,738 @@
+=== DIMENSIONS ===
+  time: 48
+  height: 55
+  obs_dim: 27
+  gas_dim: 3
+  dfs_dim: 16
+  arb_dim1: 123
+  arb_dim2: 123
+
+=== VARIABLES ===
+  base_time () int32
+    long_name: Epoch time
+    units: seconds since 1970-01-01 00:00:00 0:00
+  time_offset ('time',) float64
+    long_name: Time offset from base_time
+    units: Seconds
+  time ('time',) float64
+    long_name: Time
+    units: seconds since 2025-12-01 00:00:00 0:00
+    calendar: standard
+  hour ('time',) float64
+    long_name: Time
+    units: hours since 2025-12-01 00:00:00 0:00
+  qc_flag ('time',) int16
+    long_name: Manual QC flag
+    variable_type: Quality control
+    comment1: unitless
+    comment2: Value of 0 implies quality of the retrieved fields is ok; non-zero values indicate that the sample has suspect quality
+    comment3: See the global attribute Retrieval_option_flags to determine which variables were being retrieved for this data file
+    value_0: Quality of retrieval is ok
+    value_2: Implies retrieval did not converge
+    value_3: Implies retrieval converged but RMS between the observed_vector and forward_calc is too large
+    value_4: Implies the gamma value of the retrieval was too large
+    RMSa_threshold_used_for_QC: 10.0 [unitless]
+    gamma_threshold_used_for_QC: 5.0 [unitless]
+  height ('height',) float32
+    long_name: Height above ground level
+    units: km
+  temperature ('time', 'height') float32
+    long_name: Temperature
+    units: degC
+    variable_type: Retrieved
+  waterVapor ('time', 'height') float32
+    long_name: Water vapor mixing ratio
+    units: g/kg
+    variable_type: Retrieved
+  lwp ('time',) float32
+    long_name: Liquid water path
+    units: g/m2
+    variable_type: Retrieved
+  lReff ('time',) float32
+    long_name: Liquid water effective radius
+    units: microns
+    variable_type: Retrieved
+  iTau ('time',) float32
+    long_name: Ice cloud optical depth (geometric limit)
+    variable_type: Retrieved but disabled -- will default to the a priori
+    comment1: unitless
+  iReff ('time',) float32
+    long_name: Ice effective radius
+    units: microns
+    variable_type: Retrieved but disabled -- will default to the a priori
+  co2 ('time', 'gas_dim') float32
+    long_name: Carbon dioxide concentration
+    units: ppm
+    variable_type: Retrieved but disabled -- will default to the a priori
+    comment: Parameterized profile information; see users guide
+  ch4 ('time', 'gas_dim') float32
+    long_name: Methane concentration
+    units: ppm
+    variable_type: Retrieved but disabled -- will default to the a priori
+    comment: Parameterized profile information; see users guide
+  n2o ('time', 'gas_dim') float32
+    long_name: Nitrous oxide concentration
+    units: ppm
+    variable_type: Retrieved but disabled -- will default to the a priori
+    comment: Parameterized profile information; see users guide
+  sigma_temperature ('time', 'height') float32
+    long_name: 1-sigma uncertainty in temperature
+    units: degC
+    variable_type: Uncertainty of associated variable
+  sigma_waterVapor ('time', 'height') float32
+    long_name: 1-sigma uncertainty in water vapor mixing vapor
+    units: g/kg
+    variable_type: Uncertainty of associated variable
+  sigma_lwp ('time',) float32
+    long_name: 1-sigma uncertainty in liquid water path
+    units: g/m2
+    variable_type: Uncertainty of associated variable
+  sigma_lReff ('time',) float32
+    long_name: 1-sigma uncertainty in liquid water effective radius
+    units: microns
+    variable_type: Uncertainty of associated variable
+  sigma_iTau ('time',) float32
+    long_name: 1-sigma uncertainty in ice cloud optical depth (geometric limit)
+    variable_type: Uncertainty of associated variable
+    comment1: unitless
+  sigma_iReff ('time',) float32
+    long_name: 1-sigma uncertainty in ice effective radius
+    units: microns
+    variable_type: Uncertainty of associated variable
+  sigma_co2 ('time', 'gas_dim') float32
+    long_name: 1-sigma uncertainty in carbon dioxide concentration
+    units: ppm
+    variable_type: Uncertainty of associated variable
+    comment: Parameterized profile information; see users guide
+  sigma_ch4 ('time', 'gas_dim') float32
+    long_name: 1-sigma uncertainty in methane concentration
+    units: ppm
+    variable_type: Uncertainty of associated variable
+    comment: Parameterized profile information; see users guide
+  sigma_n2o ('time', 'gas_dim') float32
+    long_name: 1-sigma uncertaintiy in nitrous oxide concentration
+    units: ppm
+    variable_type: Uncertainty of associated variable
+    comment: Parameterized profile information; see users guide
+  converged_flag ('time',) int16
+    long_name: Convergence flag
+    variable_type: Quality control
+    comment1: unitless
+    value_0: 0 indicates no convergence
+    value_1: 1 indicates convergence in Rodgers sense (i.e., di2m << dimY)
+    value_2: 2 indicates convergence (best rms after rms increased drastically
+    value_3: 3 indicates convergence (best rms after max_iter)
+    value_9: 9 indicates found NaN in Xnp1
+  gamma ('time',) float32
+    long_name: Gamma parameter
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: See Turner and Loehnert JAMC 2014 for details
+  n_iter ('time',) int16
+    long_name: Number of iterations performed
+    variable_type: Diagnostic variable
+    comment1: unitless
+  rmsr ('time',) float32
+    long_name: Root mean square error between IRS and MWR obs in the observation vector and the forward calculation
+    variable_type: Quality control
+    comment1: unitless
+    comment2: Computed as sqrt( sum_over_i[ ((Y_i - F(Xn_i)) / sigma_Y_i)^2 ] / sizeY)
+    comment3: Only IRS radiance observations in the observation vector are used
+  rmsa ('time',) float32
+    long_name: Root mean square error between observation vector and the forward calculation
+    variable_type: Quality control
+    comment1: unitless
+    comment2: Computed as sqrt( sum_over_i[ ((Y_i - F(Xn_i)) / sigma_Y_i)^2 ] / sizeY)
+    comment3: Entire observation vector used in this calculation
+  rmsp ('time',) float32
+    long_name: Root mean square error between prior T/q profile and the retrieved T/q profile
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: Computed as sqrt( mean[ ((Xa - Xn) / sigma_Xa)^2 ] )
+  chi2 ('time',) float32
+    long_name: Chi-square statistic of Y vs. F(Xn)
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: Computed as sqrt( sum_over_i[ ((Y_i - F(Xn_i)) / Y_i)^2 ] / sizeY)
+  convergence_criteria ('time',) float32
+    long_name: Convergence criteria di^2
+    variable_type: Diagnostic variable
+    comment1: unitless
+  dfs ('time', 'dfs_dim') float32
+    long_name: Degrees of freedom of signal
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: total DFS, then DFS for each of temperature, waterVapor, LWP, L_Reff, I_tau, I_Reff, carbonDioxide, methane, nitrousOxide
+  dfs_no_model ('time', 'dfs_dim') float32
+    long_name: Degrees of freedom of signal excluding model data
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: total DFS, then DFS for each of temperature, waterVapor, LWP, L_Reff, I_tau, I_Reff, carbonDioxide, methane, nitrousOxide
+    comment3: If no model data is used in the obs vector this field will be the same as dfs
+  sic ('time',) float32
+    long_name: Shannon information content
+    variable_type: Diagnostic variable
+    comment1: unitless
+  vres_temperature ('time', 'height') float32
+    long_name: Vertical resolution of the temperature profile
+    units: km
+    variable_type: Diagnostic variable
+  vres_temperature_no_model ('time', 'height') float32
+    long_name: Vertical resolution of the temperature profile exluding model data
+    units: km
+    variable_type: Diagnostic variable
+    comment1: If no model data is used in the obs vector this field will be the same as vres_temperature
+  vres_waterVapor ('time', 'height') float32
+    long_name: Vertical resolution of the water vapor profile
+    units: km
+    variable_type: Diagnostic variable
+  vres_waterVapor_no_model ('time', 'height') float32
+    long_name: Vertical resolution of the water vapor profile exluding model data
+    units: km
+    variable_type: Diagnostic variable
+    comment1: If no model data is used in the obs vector this field will be the same as vres_waterVapor
+  cdfs_temperature ('time', 'height') float32
+    long_name: Vertical profile of the cumulative degrees of freedom of signal for temperature
+    variable_type: Diagnostic variable
+    comment1: unitless
+  cdfs_temperature_no_model ('time', 'height') float32
+    long_name: Vertical profile of the cumulative degrees of freedom of signal for temperature excluding model data
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2:  If no model data is used in the obs vector this field will be the same as cdfs_temperature
+  cdfs_waterVapor ('time', 'height') float32
+    long_name: Vertical profile of the cumulative degrees of freedom of signal for water vapor
+    variable_type: Diagnostic variable
+    comment1: unitless
+  cdfs_waterVapor_no_model ('time', 'height') float32
+    long_name: Vertical profile of the cumulative degrees of freedom of signal for water vapor excluding model data
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: If no model data is used in the obs vector this field will be the same as cdfs_waterVapor
+  cbh ('time',) float32
+    long_name: Cloud base height above ground level
+    units: km
+    variable_type: Observation used within retrieval
+  cbh_flag ('time',) int16
+    long_name: Flag indicating the source of the cbh
+    variable_type: Diagnostic variable
+    comment1: unitless
+    comment2: See users guide for explanation of the values
+    value0: Value 0 implies Clear Sky
+    value1: Value 1 implies Inner Window from ceilometer
+    value2: Value 2 implies Outer Window from ceilometer
+    value3: Value 3 implies Default CBH
+  cbh_tcld ('time',) float32
+    long_name: Cloud base height above ground level using Tcld method
+    units: km
+    variable_type: Derived from retrieved variables
+    spectral_range: Spectral window used is 898.00 to 904.00 cm-1
+  cbh_mlev ('time',) float32
+    long_name: Cloud base height above ground level using MLEV method
+    units: km
+    variable_type: Derived from retrieved variables
+    spectral_range: Spectral window used is 790.00 to 810.00 cm-1
+  cld_emis ('time',) float32
+    long_name: Cloud emissivity derived using the MLEV method
+    comment1: unitless
+    variable_type: Derived from retrieved variables
+    spectral_range: Spectral window used is 790.00 to 810.00 cm-1
+  pressure ('time', 'height') float32
+    long_name: Derived pressure
+    units: mb
+    variable_type: Derived from retrieved variables
+    comment: derived from surface pressure observations and the hyposmetric calculation using the thermodynamic profiles
+  theta ('time', 'height') float32
+    long_name: Potential temperature
+    units: degK
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  thetae ('time', 'height') float32
+    long_name: Equivalent potential temperature
+    units: degK
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  rh ('time', 'height') float32
+    long_name: Relative humidity
+    units: %
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved field
+  dewpt ('time', 'height') float32
+    long_name: Dew point temperature
+    units: degC
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  co2_profile ('time', 'height') float32
+    long_name: CO2 profile
+    units: ppm
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  ch4_profile ('time', 'height') float32
+    long_name: CH4 profile
+    units: ppm
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  n2o_profile ('time', 'height') float32
+    long_name: N2O profile
+    units: ppm
+    variable_type: Derived from retrieved variables
+    comment: This field is derived from the retrieved fields
+  pwv ('time',) float32
+    long_name: Precipitable water vapor
+    units: cm
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  pblh ('time',) float32
+    long_name: Planetary boundary layer height
+    units: km
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  sbih ('time',) float32
+    long_name: Surface-based inversion height
+    units: km
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  sbim ('time',) float32
+    long_name: Surface-based inversion magnitude
+    units: degC
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  sbLCL ('time',) float32
+    long_name: Lifted condesation level for a surface-based parcel
+    units: km
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  sbCAPE ('time',) float32
+    long_name: Convective available potential energy for a surface-based parcel
+    units: J/kg
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -9999 indicates that this field could not be computed (typically because the value was aphysical)
+  sbCIN ('time',) float32
+    long_name: Convective inhibition for a surface-based parcel
+    units: J/kg
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -9999 indicates that this field could not be computed (typically because the value was aphysical)
+  mlLCL ('time',) float32
+    long_name: Lifted condesation level for a mixed-layer parcel
+    units: km
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -999 indicates that this field could not be computed (typically because the value was aphysical)
+  mlCAPE ('time',) float32
+    long_name: Convective available potential energy for a mixed-layer parcel
+    units: J/kg
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -9999 indicates that this field could not be computed (typically because the value was aphysical)
+  mlCIN ('time',) float32
+    long_name: Convective inhibition for a mixed-layer parcel
+    units: J/kg
+    variable_type: Derived from retrieved variables
+    comment1: This field is derived from the retrieved fields
+    comment2: A value of -9999 indicates that this field could not be computed (typically because the value was aphysical)
+  sigma_pwv ('time',) float32
+    long_name: 1-sigma uncertainties in precipitable water vapor
+    units: cm
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_pblh ('time',) float32
+    long_name: 1-sigma uncertainties in the PBL height
+    units: km
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_sbih ('time',) float32
+    long_name: 1-sigma uncertainties in the surface-based inversion height
+    units: km
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_sbim ('time',) float32
+    long_name: 1-sigma uncertainties in the surface-based inversion magnitude
+    units: degC
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_sbLCL ('time',) float32
+    long_name: 1-sigma uncertainties in the LCL for a surface-based parcel
+    units: km
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_sbCAPE ('time',) float32
+    long_name: 1-sigma uncertainties in surface-based CAPE
+    units: J/kg
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_sbCIN ('time',) float32
+    long_name: 1-sigma uncertainties in surface-based CIN
+    units: J/kg
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_mlLCL ('time',) float32
+    long_name: 1-sigma uncertainties in the LCL for a mixed-layer parcel
+    units: km
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_mlCAPE ('time',) float32
+    long_name: 1-sigma uncertainties in mixed-layer CAPE
+    units: J/kg
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  sigma_mlCIN ('time',) float32
+    long_name: 1-sigma uncertainties in mixed-layer CIN
+    units: J/kg
+    variable_type: Uncertainty of associated variable
+    comment1: This field is derived from the retrieved fields
+    comment2: The uncertainties were determined using a monte carlo sampling of the posterior covariance matrix
+    comment3: A value of -999 indicates that the uncertainty in this inded could not be computed (typically because the values were all unphysical)
+  obs_flag ('obs_dim',) int16
+    long_name: Flag indicating type of observation for each vector element
+    variable_type: Observation used within retrieval
+    comment1: unitless
+    value_01: IRS spectral radiance in wavenumber -- i.e., cm^(-1)
+    value_02: MWR spectral brightness temperature [degK] from a zenith-pointing microwave radiometer
+    value_05: Surface met temperature in degC from External surface met station
+    value_05_comment1: Surface met station is 0 m above height=0 level
+    value_06: Surface met water vapor in g/kg from External surface met station
+    value_06_comment1: Surface met station is 0 m above height=0 level
+  obs_dimension ('obs_dim',) float64
+    long_name: Dimension of the observation vector
+    comment1: mixed units -- see obs_flag field above
+    variable_type: Observation used within retrieval
+  obs_vector ('time', 'obs_dim') float32
+    long_name: Observation vector Y
+    comment1: mixed units -- see obs_flag field above
+    variable_type: Observation used within retrieval
+  obs_vector_uncertainty ('time', 'obs_dim') float32
+    long_name: 1-sigma uncertainty in the observation vector (sigY)
+    comment1: mixed units -- see obs_flag field above
+    variable_type: Uncertainty of associated variable
+  forward_calc ('time', 'obs_dim') float32
+    long_name: Forward calculation from state vector (i.e., F(Xn))
+    comment1: mixed units -- see obs_flag field above
+    variable_type: Diagnostic variable
+  arb1 ('arb_dim1',) int16
+    long_name: Arbitrary dimension
+    comment1: mixed units
+    comment2: contains (1) temperature profile, (2) water vapor profile (3) liquid water path, (4) liquid water Reff, (5) ice cloud optical depth, (6) ice cloud Reff, (7) carbon dioxide (8) methane, (9) nitrous oxide
+    variable_type: Diagnostic variable
+  arb2 ('arb_dim2',) int16
+    long_name: Arbitrary dimension
+    comment1: mixed units
+    comment2: contains (1) temperature profile, (2) water vapor profile (3) liquid water path , (4) liquid water Reff, (5) ice cloud optical depth, (6) ice cloud Reff, (7) carbon dioxide (8) methane, (9) nitrous oxide
+    variable_type: Diagnostic variable
+  Xa ('arb_dim1',) float64
+    long_name: Prior mean state
+    comment1: mixed units -- see field arb above
+    variable_type: Diagnostic variable
+  Sa ('arb_dim1', 'arb_dim2') float64
+    long_name: Prior covariance
+    comment1: mixed units -- see field arb above
+    variable_type: Diagnostic variable
+  Xop ('time', 'arb_dim1') float32
+    long_name: Optimal solution
+    comment1: mixed units -- see field arb above
+    variable_type: Diagnostic variable
+  Sop ('time', 'arb_dim1', 'arb_dim2') float32
+    long_name: Covariance matrix of the solution
+    comment1: mixed units -- see field arb above
+    variable_type: Diagnostic variable
+  Akernal ('time', 'arb_dim1', 'arb_dim2') float32
+    long_name: Averaging kernal
+    comment1: mixed units -- see field arb above
+    variable_type: Diagnostic variable
+  lat () float32
+    long_name: Latitude
+    units: degrees_north
+  lon () float32
+    long_name: Longitude
+    units: degrees_east
+  alt () float32
+    long_name: station height above mean sea level
+    units: m
+
+=== GLOBAL ATTRIBUTES ===
+  algorithm_code: TROPoe Retrieval Code (formerly AERIoe)
+  algorithm_authors: Dave Turner, NOAA Global Systems Laboratory (dave.turner@noaa.gov), Josh Gebauer, NOAA National Severe Storms Laboratory / CIWRO (joshua.gebauer@noaa.gov), Tyler Bell, NOAA National Severe Storms Laboratory / CIWRO (tyler.bell@noaa.gov)
+  algorithm_comment1: TROPoe is a physical-iterative algorithm that retrieves thermodynamic profiles from a wide range of ground-based remote sensors.  It was primarily designed to use either infrared spectrometers or microwave radiometers as the primary instrument, and include observations from other sources to improve the quality of the retrieved profiles
+  algorithm_comment2: Original code was written in IDL and is described by the "AERIoe" papers listed below
+  algorithm_comment3: Code was ported to python, and packaged into a container with the needed radiative transfer models and other required inputs
+  algorithm_disclaimer: TROPoe was developed by NOAA and is provided on an as-is basis, with no warranty
+  algorithm_code_version: 0.19-38-gf84b6e3
+  algorithm_package_version: TROPoe-0.20
+  algorithm_reference1: DD Turner and U Loehnert, 2014: Information Content and Uncertanties in Thermodynamic Profiles and Liquid Cloud Properties Retrieved from the Ground-Based Atmospheric Emitted Radiance Interferometer (AERI), J Appl Met Clim, vol 53, pp 752-771, doi:10.1175/JAMC-D-13-0126.1
+  algorithm_reference2: DD Turner and WG Blumberg, 2019: Improvements to the AERIoe thermodynamic profile retrieval algorithm. IEEE Selected Topics Appl. Earth Obs. Remote Sens., 12, 1339-1354, doi:10.1109/JSTARS.2018.2874968
+  algorithm_reference3: DD Turner and U Loehnert, 2021: Ground-based temperature and humidity profiling: Combining active and passive remote sensors, Atmos. Meas. Tech., vol 14, pp 3033-3048, doi:10.5194/amt-14-3033-2021
+  forward_model_reference1: The forward radiative transfer models are from Atmospheric and Environmental Research Inc (AER); an overview is provided by Clough et al., 2005: Atmospheric radiative transfer modeling: A summary of the AER codes, JQSRT, vol 91, pp 233-244, doi:10.1016/j.jqsrt.2004.05.058
+  forward_model_reference2: The infrared model is LBLRTM; papers describing this model include doi:10.1029/2018JD029508, doi:10.1175/amsmonographs-d-15-0041.1, and doi:10.1098/rsta.2011.0295
+  forward_model_reference3: The microwave model is MonoRTM; papers describing this model include doi:10.1109/TGRS.2010.2091416 and doi:10.1109/TGRS.2008.2002435
+  datafile_created_on_date: 2025-12-09 16:54:42
+  datafile_created_on_machine: x86_64
+  Site: JOYCE Site in Juelich, Germany
+  Instrument: TOPHAT Hatpro
+  Dataset_contact: Dave Turner, NOAA, dave.turner@noaa.gov
+  Comment_on_recentering1: The WVMR profile prior recentered using a surface WVMR value of  3.44 g/kg
+  Comment_on_recentering2: The WVMR mean profile was scaled by a factor of  0.44
+  Comment_on_recentering3: The WVMR covariance was scaled by a factor of  0.66
+  Comment_on_recentering4: The temperature prior was recentered using the converve-RH method
+  Prior_dataset_comment: Mid-latitude prior computed from ARM SGP Radiosondes
+  Prior_dataset_filename: prior.MIDLAT.nc
+  Prior_dataset_number_profiles: 5868
+  Prior_dataset_T_inflation_factor: 1.0 at the surface to 1.0 at 1.0 km AGL
+  Prior_dataset_Q_inflation_factor: 1.0 at the surface to 1.0 at 1.0 km AGL
+  Prior_dataset_TQ_correlation_reduction_factor: 1.0
+  Retrieval_option_flags: 1, 1, 1, 0, 0, 0, 0
+  Retrieval_option_flags_variables: doTemp, doWVMR, doLiqCloud, doIceCloud, doCO2, doCH4, doN2O
+  vip_tres: 30 minutes. Note that the sample time corresponds to the center of the averaging interval. A value of 0 implies that no averaging was performed
+  Retrieval_start_hour: 0.0
+  Conventions: CF-1.10
+  VIP_tres: 30
+  VIP_avg_instant: -1
+  VIP_zgrid: 0.000, 0.010, 0.021, 0.033, 0.046, 0.061, 0.077, 0.095, 0.114, 0.136, 0.159, 0.185, 0.214, 0.245, 0.280, 0.318, 0.359, 0.405, 0.456, 0.512, 0.573, 0.640, 0.714, 0.795, 0.885, 0.983, 1.092, 1.211, 1.342, 1.486, 1.645, 1.819, 2.011, 2.223, 2.455, 2.710, 2.991, 3.300, 3.640, 4.014, 4.426, 4.879, 5.376, 5.924, 6.526, 7.189, 7.918, 8.720, 9.602,10.572,11.639,12.813,14.104,15.525,17.087
+  VIP_station_lat: 50.99
+  VIP_station_lon: 6.41
+  VIP_station_alt: 111.0
+  VIP_station_pres: 980.0
+  VIP_station_psfc_min: 800.0
+  VIP_station_psfc_max: 1040.0
+  VIP_omb_flag: 0
+  VIP_omb_path: /data
+  VIP_omb_file: omb_input.nc
+  VIP_omb_required_minht: 10.0
+  VIP_irs_type: -1
+  VIP_irsch1_path: /data/aerich1
+  VIP_irsch2_path: /data/aerich2
+  VIP_irssum_path: /data/aerisum
+  VIP_irseng_path: /data/aerieng
+  VIP_irs_zenith_scene_mirror_angle: 180
+  VIP_irs_min_noise_flag: 1
+  VIP_irs_min_noise_wnum: 500,522,546,575,600,631,747,1439,1770,1884,2217,3000
+  VIP_irs_min_noise_spec: 65.309,14.056,3.283,1.333,0.813,0.557,0.304,0.581,0.822,0.025,0.023,0.044
+  VIP_irs_noise_inflation: 1.0
+  VIP_irs_smooth_noise: 0
+  VIP_irs_band_noise_inflation: 1
+  VIP_irs_band_noise_wnums: 775.0,810.0
+  VIP_irs_band_noise_sfc_npts: 4
+  VIP_irs_band_noise_sfc_wvmr_vals: 0.,7,12,18
+  VIP_irs_band_noise_sfc_multiplier: 20.0,20,1,1
+  VIP_irs_calib_pres: [0. 1.]
+  VIP_irs_use_missingDataFlag: 1
+  VIP_irs_hatch_switch: 1
+  VIP_irs_ignore_status_hatch: 0
+  VIP_irs_ignore_status_missingDataFlag: 0
+  VIP_irs_fv: 0.0
+  VIP_irs_fa: 0.0
+  VIP_irs_old_ffov_halfangle: 23.0
+  VIP_irs_new_ffov_halfangle: 0.0
+  VIP_irs_min_675_bt: 263.0
+  VIP_irs_max_675_bt: 313.0
+  VIP_irs_spec_cal_factor_ch1: 1.0
+  VIP_irs_spec_cal_factor_ch2: 1.0
+  VIP_irs_mlev_cbh_wnum_range: [790. 810.]
+  VIP_irs_tcld_wnum_range: [898. 904.]
+  VIP_irs_1m_od_thres: 1.0
+  VIP_mwr_type: 3
+  VIP_mwr_path: /data/hatpro
+  VIP_mwr_rootname: mwr00_l1_tb_p00
+  VIP_mwr_elev_field: ele
+  VIP_mwr_freq_field: freq_sb
+  VIP_mwr_n_tb_fields: 14
+  VIP_mwr_tb_field_names: tb
+  VIP_mwr_tb_field1_tbmax: 100.0
+  VIP_mwr_tb_freqs: 22.24, 23.04, 23.84, 25.44, 26.24, 27.84, 31.4, 51.26, 52.28, 53.86, 54.94, 56.66, 57.3, 58.0
+  VIP_mwr_tb_noise: 0.3,   0.3,   0.3,   0.3,   0.3,   0.3,  0.3,  1.00,  1.00,  0.50,  0.40,   0.3,  0.3,  0.2
+  VIP_mwr_tb_bias: 0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,  0.0
+  VIP_mwr_tb_replicate: 1
+  VIP_mwr_time_delta: 0.083
+  VIP_mwrscan_type: 0
+  VIP_mwrscan_path: None
+  VIP_mwrscan_rootname: mwr
+  VIP_mwrscan_freq_field: freq
+  VIP_mwrscan_elev_field: elev
+  VIP_mwrscan_n_tb_fields: 0
+  VIP_mwrscan_n_elevations: 2
+  VIP_mwrscan_elevations: 20,160
+  VIP_mwrscan_tb_field1_tbmax: 330.0
+  VIP_mwrscan_tb_field_names: tbsky23,tbsky31
+  VIP_mwrscan_tb_freqs: 23.8,31.4
+  VIP_mwrscan_tb_noise: 0.3,0.3
+  VIP_mwrscan_tb_bias: 0.0,0.0
+  VIP_mwrscan_time_delta: 0.25
+  VIP_ext_sfc_temp_type: 1
+  VIP_ext_sfc_temp_fieldname: ta
+  VIP_ext_sfc_temp_units: 2
+  VIP_ext_sfc_temp_npts: 1
+  VIP_ext_sfc_temp_random_error: 0.5
+  VIP_ext_sfc_temp_rep_error: 0.0
+  VIP_ext_sfc_wv_type: 1
+  VIP_ext_sfc_wv_fieldname: hur
+  VIP_ext_sfc_wv_units: 2
+  VIP_ext_sfc_wv_npts: 1
+  VIP_ext_sfc_rh_random_error: 3.0
+  VIP_ext_sfc_wv_mult_error: 1.0
+  VIP_ext_sfc_wv_rep_error: 0.0
+  VIP_ext_sfc_pres_type: 1
+  VIP_ext_sfc_pres_fieldname: pa
+  VIP_ext_sfc_pres_units: 3
+  VIP_ext_sfc_path: /data/hatpro
+  VIP_ext_sfc_rootname: mwr00_l1_tb_p00
+  VIP_ext_sfc_time_format: 2
+  VIP_ext_sfc_time_delta: 0.2
+  VIP_ext_sfc_relative_height: 0
+  VIP_ext_wv_prof_type: 0
+  VIP_ext_wv_prof_path: None
+  VIP_ext_wv_prof_minht: 0.0
+  VIP_ext_wv_prof_maxht: 10.0
+  VIP_ext_wv_prof_min_error: 0.01
+  VIP_ext_wv_noise_mult_val: [1. 1. 1.]
+  VIP_ext_wv_noise_mult_hts: [ 0.  3. 20.]
+  VIP_ext_wv_add_rel_error: 0.0
+  VIP_ext_wv_ht_offset: 0.0
+  VIP_ext_wv_time_delta: 1.0
+  VIP_ext_temp_prof_type: 0
+  VIP_ext_temp_prof_path: None
+  VIP_ext_temp_prof_minht: 0.0
+  VIP_ext_temp_prof_maxht: 10.0
+  VIP_ext_temp_noise_adder_val: [0. 0. 0.]
+  VIP_ext_temp_noise_adder_hts: [ 0.  3. 20.]
+  VIP_ext_temp_ht_offset: 0.0
+  VIP_ext_temp_time_delta: 1.0
+  VIP_mod_wv_prof_type: 0
+  VIP_mod_wv_prof_path: None
+  VIP_mod_wv_prof_minht: 0.0
+  VIP_mod_wv_prof_maxht: 10.0
+  VIP_mod_wv_prof_min_error: 0.01
+  VIP_mod_wv_noise_mult_val: [1. 1. 1.]
+  VIP_mod_wv_noise_mult_hts: [ 0.  3. 20.]
+  VIP_mod_wv_ht_offset: 0.0
+  VIP_mod_wv_time_delta: 1.0
+  VIP_mod_temp_prof_type: 0
+  VIP_mod_temp_prof_path: None
+  VIP_mod_temp_prof_minht: 0.0
+  VIP_mod_temp_prof_maxht: 10.0
+  VIP_mod_temp_noise_adder_val: [0. 0. 0.]
+  VIP_mod_temp_noise_adder_hts: [ 0.  3. 20.]
+  VIP_mod_temp_ht_offset: 0.0
+  VIP_mod_temp_time_delta: 1.0
+  VIP_add_tropoe_T_input_flag: 0
+  VIP_add_tropoe_q_input_flag: 0
+  VIP_add_tropoe_input_lwp_thres: 10.0
+  VIP_add_tropoe_input_cbh_thres: 5.0
+  VIP_add_tropoe_gamma_threshold: 2
+  VIP_add_tropoe_T_noise_adder_val: [3. 1. 1.]
+  VIP_add_tropoe_T_noise_adder_hts: [ 0.  1. 20.]
+  VIP_add_tropoe_q_noise_mult_val: [5. 2. 2.]
+  VIP_add_tropoe_q_noise_mult_hts: [ 0.  1. 20.]
+  VIP_add_tropoe_use_prior_as_max: 1
+  VIP_add_tropoe_use_pblh_flag: 1
+  VIP_co2_sfc_type: 0
+  VIP_co2_sfc_npts: 1
+  VIP_co2_sfc_rep_error: 0.0
+  VIP_co2_sfc_path: None
+  VIP_co2_sfc_relative_height: 0
+  VIP_co2_sfc_time_delta: 1.5
+  VIP_cbh_type: 1
+  VIP_cbh_path: /data/ceil
+  VIP_cbh_window_in: 20
+  VIP_cbh_window_out: 180
+  VIP_cbh_default_ht: 2.0
+  VIP_output_akernal: 1
+  VIP_lbl_home: /home/tropoe/vip/src/lblrtm_v12.17/lblrtm
+  VIP_lbl_std_atmos: 6
+  VIP_path_std_atmos: /home/tropoe/vip/src/input/idl_code/std_atmosphere.idl
+  VIP_lbl_tape3: TAPE3.350-1600cm-1.first_7_molecules
+  VIP_monortm_version: v5.0
+  VIP_monortm_wrapper: /home/tropoe/vip/src/monortm_v5.0/wrapper/monortm_v5
+  VIP_monortm_exec: /home/tropoe/vip/src/monortm_v5.0/monortm/monortm_v5.0_linux_intel_sgl
+  VIP_monortm_spec: /home/tropoe/vip/src/monortm_v5.0/monolnfl_v1.0/TAPE3.spectral_lines.dat.0_55.v5.0_veryfast
+  VIP_lblrtm_jac_option: 4
+  VIP_lblrtm_forward_threshold: 0.0
+  VIP_lblrtm_jac_interpol_npts_wnum: 10
+  VIP_monortm_jac_option: 2
+  VIP_jac_max_ht: 8.0
+  VIP_max_iterations: 10
+  VIP_cvgmult: 0.25
+  VIP_first_guess: 1
+  VIP_superadiabatic_maxht: 0.3
+  VIP_spectral_bands: 612.0-618.0,624.0-660.0,674.0-713.0,713.0-722.0,538.0-588.0,793.0-804.0,860.1-864.0,872.2-877.5,898.2-905.4
+  VIP_retrieve_temp: 1
+  VIP_retrieve_wvmr: 1
+  VIP_retrieve_co2: 0
+  VIP_fix_co2_shape: 0
+  VIP_retrieve_ch4: 0
+  VIP_fix_ch4_shape: 0
+  VIP_retrieve_n2o: 0
+  VIP_fix_n2o_shape: 0
+  VIP_retrieve_lcloud: 1
+  VIP_retrieve_icloud: 0
+  VIP_lcloud_ssp: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_wat.gamma_sigma_0p100
+  VIP_icloud_ssp: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_ice.gamma_sigma_0p100
+  VIP_qc_rms_value: 10.0
+  VIP_qc_gamma_value: 5.0
+  VIP_recenter_prior: 1
+  VIP_recenter_input: 0.0
+  VIP_recenter_covar_min_sfactor: 0.6
+  VIP_recenter_covar_max_sfactor: 1.4
+  VIP_prior_tikhonov_factor: 1.5e-05
+  VIP_prior_t_ival: 1.0
+  VIP_prior_t_iht: 1.0
+  VIP_prior_q_ival: 1.0
+  VIP_prior_q_iht: 1.0
+  VIP_prior_tq_cov_val: 1.0
+  VIP_prior_chimney_ht: 0.0
+  VIP_prior_co2_mn: [423.07744383   5.          -5.        ]
+  VIP_prior_co2_sd: [ 2. 15.  3.]
+  VIP_prior_ch4_mn: [ 1.793  0.    -5.   ]
+  VIP_prior_ch4_sd: [5.38e-02 1.50e-03 3.00e+00]
+  VIP_prior_n2o_mn: [ 0.31  0.   -5.  ]
+  VIP_prior_n2o_sd: [9.3e-03 2.0e-04 3.0e+00]
+  VIP_prior_lwp_mn: 0.0
+  VIP_prior_lwp_sd: 200.0
+  VIP_prior_lReff_mn: 8.0
+  VIP_prior_lReff_sd: 4.0
+  VIP_prior_itau_mn: 0.0
+  VIP_prior_itau_sd: 50.0
+  VIP_prior_iReff_mn: 25.0
+  VIP_prior_iReff_sd: 8.0
+  VIP_min_PBL_height: 0.3
+  VIP_max_PBL_height: 5.0
+  VIP_nudge_PBL_height: 0.5
+  VIP_plot_output: 0
+  VIP_plot_path: /data/tropoe/hatpro
+  VIP_plot_rootname: tropoe.c1
+  VIP_plot_xlim: [ 0. 24.]
+  VIP_plot_ylim: [0. 2.]
+  VIP_plot_temp_lim: [-10.  20.]
+  VIP_plot_wvmr_lim: [ 0. 20.]
+  VIP_plot_tuncert_lim: [0. 3.]
+  VIP_plot_wvuncert_lim: [0. 3.]
+  VIP_plot_theta_lim: [290. 320.]
+  VIP_plot_rh_lim: [  0. 100.]
+  VIP_plot_thetae_lim: [290. 320.]
+  VIP_plot_dewpt_lim: [-15.  25.]
+  VIP_plot_comment: 
+  VIP_plot_tres_min_gap: 90
+  VIP_plot_lwp_cbh_threshold: 8.0
+  Total_clock_execution_time_in_s: 766.431353
