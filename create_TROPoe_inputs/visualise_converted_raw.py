@@ -10,7 +10,7 @@ import matplotlib.dates as mdates
 from datetime import datetime, timezone
 
 # ── config ────────────────────────────────────────────────────────────────────
-NC_FILE = r"I:\User\Documents\Research\Running_TROPoe\Converting_RAW_HATPRO_for_TROPoe\output\20260408_innsbruck_1C01.nc"
+NC_FILE = r"I:\User\Documents\Research\Running_TROPoe\Converting_RAW_HATPRO_for_TROPoe\output\innsbruck_1C01_20260408.nc"
 # ─────────────────────────────────────────────────────────────────────────────
 
 
