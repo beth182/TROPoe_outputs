@@ -550,10 +550,11 @@ def plot_diff_mean_profile(da, db_a, label_a, label_b, out_prefix):
 
 
 # Path to your TROPoe output file
-FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
-
+# FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
+FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/beth_innit/tropoe/hatpro/tropoe_innsbruck.c1.20260408.040015.nc'
 # Path to a second file for comparison (set to None to skip)
-FILE_B = 'I:/User/Documents/Research/Running_TROPoe/Download from Dave/beth_saunders/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
+# FILE_B = 'I:/User/Documents/Research/Running_TROPoe/Download from Dave/beth_saunders/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
+FILE_B = None
 
 # Labels for the comparison plot
 LABEL_A = 'Beth'
