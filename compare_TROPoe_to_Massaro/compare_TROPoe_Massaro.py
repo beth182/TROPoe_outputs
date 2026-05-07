@@ -51,7 +51,7 @@ TIMESERIES_HEIGHTS_KM = [0.1, 0.5, 1.0, 2.0, 4.0]
 _HERE = os.path.dirname(os.path.abspath(__file__))
 _DATA = os.path.join(_HERE, "test_day_data")
 
-NC_FILE    = os.path.join(_DATA, "tropoe_innsbruck_c1_20260408_000015.nc")
+NC_FILE    = os.path.join(_DATA, "tropoe_innsbruck.c1.20260408.000015.nc")
 T_CSV      = os.path.join(_DATA, "data_temperature.csv")
 Q_CSV      = os.path.join(_DATA, "data_humidity.csv")
 MET_CSV    = os.path.join(_DATA, "data_met.csv")
@@ -148,7 +148,7 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
         ax.set_ylabel(f"~{target_h*1000:.0f} m\nT (degC)", fontsize=8)
         if row == 0:
             ax.set_title("Temperature")
-            ax.legend(fontsize=8)
+        ax.legend(fontsize=8)
         ax.grid(alpha=0.3)
 
         ax = axes[row, 1]
@@ -157,7 +157,7 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
         ax.set_ylabel("q", fontsize=8)
         if row == 0:
             ax.set_title("Humidity")
-            ax.legend(fontsize=8)
+        ax.legend(fontsize=8)
         ax.grid(alpha=0.3)
 
     for ax in axes[-1, :]:
