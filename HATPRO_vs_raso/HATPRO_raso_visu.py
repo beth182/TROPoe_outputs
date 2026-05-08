@@ -594,15 +594,15 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
         ax_t = axes[0, col]
         ax_t.plot(entry["hatpro_temp"][mask], heights[mask],
                   color="tab:red", linewidth=1.8, label="HATPRO")
-        ax_t.plot(entry["sonde_temp"][mask], heights[mask],
-                  color="tab:blue", linewidth=1.2, linestyle="--",
-                  marker="o", markersize=3, markevery=3, label="Sonde")
         if entry["tropoe_temp"] is not None:
             t_heights = entry["tropoe_heights_km"]
             t_mask = t_heights <= max_height_km
             ax_t.plot(entry["tropoe_temp"][t_mask], t_heights[t_mask],
-                      color="tab:orange", linewidth=1.2, linestyle=":",
+                      color="tab:green", linewidth=1.8,
                       label="TROPoe")
+        ax_t.plot(entry["sonde_temp"][mask], heights[mask],
+                  color="k", linewidth=1.2, linestyle="--",
+                  label="Sonde")
         ax_t.set_title(title, fontsize=9)
         if col == 0:
             ax_t.set_ylabel("Height agl [km]", fontsize=9)
@@ -615,14 +615,14 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
         # --- Absolute humidity ---
         ax_h = axes[1, col]
         ax_h.plot(entry["hatpro_hum"][mask], heights[mask],
-                  color="tab:green", linewidth=1.8, label="HATPRO")
-        ax_h.plot(entry["sonde_abs_hum"][mask], heights[mask],
-                  color="tab:blue", linewidth=1.2, linestyle="--",
-                  marker="o", markersize=3, markevery=3, label="Sonde")
+                  color="tab:red", linewidth=1.8, label="HATPRO")
         if entry["tropoe_hum"] is not None:
             ax_h.plot(entry["tropoe_hum"][t_mask], t_heights[t_mask],
-                      color="tab:orange", linewidth=1.2, linestyle=":",
+                      color="tab:green", linewidth=1.8,
                       label="TROPoe")
+        ax_h.plot(entry["sonde_abs_hum"][mask], heights[mask],
+                  color="k", linewidth=1.2, linestyle="--",
+                  label="Sonde")
         if col == 0:
             ax_h.set_ylabel("Height agl [km]", fontsize=9)
         ax_h.set_xlabel("Abs. humidity [g/m³]", fontsize=8)
@@ -632,8 +632,160 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
             ax_h.legend(fontsize=7, loc="upper right")
 
     fig.suptitle(
-        f"HATPRO vs Radiosonde — Kolsass, {comparison_table[0]['launch_time'].strftime('%Y-%m-%d')}",
+        f"{comparison_table[0]['launch_time'].strftime('%Y-%m-%d')}",
         fontsize=12, fontweight="bold"
+    )
+
+    if save_path:
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+        print(f"  Figure saved to {save_path}")
+
+    return fig
+
+
+# ---------------------------------------------------------------------------
+# Visualisation — difference profiles
+# ---------------------------------------------------------------------------
+
+def plot_difference_profiles(comparison_table, max_height_km=10.0,
+                              save_path=None):
+    """
+    Plot sonde-minus-instrument difference profiles for temperature and
+    absolute humidity.
+
+    Layout: two panels side by side (temperature | humidity).
+    Individual launches are coloured by time of day (plasma colormap);
+    bold black line is the mean across all launches.
+    A dashed vertical grey line marks zero.
+
+    HATPRO differences in solid lines, TROPoe in dashed lines.
+
+    For HATPRO: sonde is already on the HATPRO grid from build_comparison_table.
+    For TROPoe: sonde is re-interpolated onto the TROPoe native grid here.
+
+    Parameters
+    ----------
+    comparison_table : list of dicts (from build_comparison_table)
+    max_height_km    : float
+    save_path        : str or Path or None
+    """
+    import matplotlib.cm as cm
+    import matplotlib.colors as mcolors
+
+    fig, (ax_t, ax_h) = plt.subplots(
+        1, 2, figsize=(10, 7), sharey=True, constrained_layout=True
+    )
+
+    # Colormap: map launch hour (0-24) to plasma
+    cmap      = cm.plasma
+    norm      = mcolors.Normalize(vmin=0, vmax=24)
+    launch_hours = [e["launch_time"].hour + e["launch_time"].minute / 60.0
+                    for e in comparison_table]
+
+    hatpro_temp_diffs   = []
+    hatpro_hum_diffs    = []
+    tropoe_temp_diffs   = []
+    tropoe_hum_diffs    = []
+    tropoe_heights_plot = None
+
+    for entry, hour in zip(comparison_table, launch_hours):
+        colour = cmap(norm(hour))
+
+        # --- HATPRO differences (sonde already on HATPRO grid) ---
+        h_heights = entry["heights_km"]
+        h_mask    = h_heights <= max_height_km
+
+        diff_t = entry["sonde_temp"][h_mask]    - entry["hatpro_temp"][h_mask]
+        diff_h = entry["sonde_abs_hum"][h_mask] - entry["hatpro_hum"][h_mask]
+
+        label = entry["launch_time"].strftime("%H:%M") + " UTC"
+        ax_t.plot(diff_t, h_heights[h_mask], color=colour, linewidth=1.2,
+                  alpha=0.85, linestyle="-", label=label)
+        ax_h.plot(diff_h, h_heights[h_mask], color=colour, linewidth=1.2,
+                  alpha=0.85, linestyle="-")
+
+        hatpro_temp_diffs.append(diff_t)
+        hatpro_hum_diffs.append(diff_h)
+
+        # --- TROPoe differences (re-interpolate sonde onto TROPoe grid) ---
+        if entry["tropoe_temp"] is not None:
+            t_heights_full  = entry["tropoe_heights_km"]
+            t_mask          = t_heights_full <= max_height_km
+            t_heights       = t_heights_full[t_mask]
+            t_heights_m_asl = t_heights * 1000.0 + HATPRO_SITE_ELEV_M
+
+            sonde_raw = entry["sonde_data_raw"]
+            sonde_z   = sonde_raw["geopotential_height"].values
+
+            f_temp = interp1d(sonde_z, sonde_raw["air_temperature"].values,
+                              bounds_error=False, fill_value=np.nan)
+            f_rh   = interp1d(sonde_z, sonde_raw["relative_humidity"].values,
+                              bounds_error=False, fill_value=np.nan)
+
+            sonde_temp_on_t   = f_temp(t_heights_m_asl)
+            sonde_rh_on_t     = f_rh(t_heights_m_asl)
+            sonde_abshum_on_t = sonde_rh_to_abs_humidity(sonde_rh_on_t,
+                                                          sonde_temp_on_t)
+
+            diff_t_trop = sonde_temp_on_t   - entry["tropoe_temp"][t_mask]
+            diff_h_trop = sonde_abshum_on_t - entry["tropoe_hum"][t_mask]
+
+            ax_t.plot(diff_t_trop, t_heights, color=colour, linewidth=1.2,
+                      alpha=0.85, linestyle="--")
+            ax_h.plot(diff_h_trop, t_heights, color=colour, linewidth=1.2,
+                      alpha=0.85, linestyle="--")
+
+            tropoe_temp_diffs.append(diff_t_trop)
+            tropoe_hum_diffs.append(diff_h_trop)
+            tropoe_heights_plot = t_heights
+
+    # --- Mean lines ---
+    h_heights_plot = entry["heights_km"][entry["heights_km"] <= max_height_km]
+
+    ax_t.plot(np.nanmean(hatpro_temp_diffs, axis=0), h_heights_plot,
+              color="black", linewidth=2.5, linestyle="-",  label="HATPRO mean")
+    ax_h.plot(np.nanmean(hatpro_hum_diffs,  axis=0), h_heights_plot,
+              color="black", linewidth=2.5, linestyle="-")
+
+    if tropoe_temp_diffs:
+        ax_t.plot(np.nanmean(tropoe_temp_diffs, axis=0), tropoe_heights_plot,
+                  color="black", linewidth=2.5, linestyle="--", label="TROPoe mean")
+        ax_h.plot(np.nanmean(tropoe_hum_diffs,  axis=0), tropoe_heights_plot,
+                  color="black", linewidth=2.5, linestyle="--")
+
+    # --- Colorbar ---
+    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
+    sm.set_array([])
+    cbar = fig.colorbar(sm, ax=[ax_t, ax_h], orientation="vertical",
+                        fraction=0.03, pad=0.02)
+    cbar.set_label("Launch time [UTC hour]", fontsize=9)
+    cbar.set_ticks(range(0, 25, 3))
+
+    # --- Legend (temperature panel only — solid=HATPRO, dashed=TROPoe) ---
+    from matplotlib.lines import Line2D
+    legend_elements = [
+        Line2D([0], [0], color="grey", linewidth=1.5, linestyle="-",  label="HATPRO"),
+        Line2D([0], [0], color="grey", linewidth=1.5, linestyle="--", label="TROPoe"),
+        Line2D([0], [0], color="black", linewidth=2.5, linestyle="-", label="Mean"),
+    ]
+    ax_t.legend(handles=legend_elements, fontsize=8, loc="upper right")
+
+    # --- Formatting ---
+    for ax in (ax_t, ax_h):
+        ax.axvline(0, color="grey", linewidth=1.0, linestyle=":", alpha=0.7)
+        ax.set_ylabel("Height agl [km]", fontsize=10)
+        ax.set_ylim(0, max_height_km)
+        ax.grid(True, alpha=0.3)
+        ax.tick_params(labelsize=9)
+
+    ax_t.set_xlabel("Sonde − Instrument [K]", fontsize=10)
+    ax_h.set_xlabel("Sonde − Instrument [g/m³]", fontsize=10)
+    ax_t.set_title("Temperature difference", fontsize=10)
+    ax_h.set_title("Abs. humidity difference", fontsize=10)
+
+    fig.suptitle(
+        f"{comparison_table[0]['launch_time'].strftime('%Y-%m-%d')}",
+        fontsize=11, fontweight="bold"
     )
 
     if save_path:
@@ -691,5 +843,9 @@ if __name__ == "__main__":
     print("Plotting...")
     plot_profile_comparison(comparison, max_height_km=10.0,
                             save_path=output_dir + datestring + "_hatpro_raso_comparison.png")
+
+    print("Plotting differences...")
+    plot_difference_profiles(comparison, max_height_km=10.0,
+                             save_path=output_dir + datestring + "_hatpro_raso_differences.png")
 
     print('end')
