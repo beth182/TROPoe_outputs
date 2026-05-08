@@ -76,8 +76,14 @@ def load_tropoe(nc_path):
     heights = ds.variables["height"][:].data          # km, (55,)
     T_C     = ds.variables["temperature"][:].data     # degC, (time, height)
     wv_gkg  = ds.variables["waterVapor"][:].data      # g/kg, (time, height)
+    P_mb = ds.variables["pressure"][:].data  # mb, (time, height)
+
+    Rd      = 287.05                                  # J kg-1 K-1
+    rho_dry = (P_mb * 100) / (Rd * (T_C + 273.15))  # kg/m3
+    wv_gm3  = wv_gkg * rho_dry                       # g/m3
+
     ds.close()
-    return times, heights, T_C, wv_gkg
+    return times, heights, T_C, wv_gm3
 
 
 def load_hatpro(t_path, q_path, met_path):
