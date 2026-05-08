@@ -8,10 +8,25 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime, timezone
+import os
+
+print('Imports complete')
 
 # ── config ────────────────────────────────────────────────────────────────────
-NC_FILE = r"I:\User\Documents\Research\Running_TROPoe\Converting_RAW_HATPRO_for_TROPoe\output\innsbruck_1C01_20260408.nc"
+datestring = '20250219'
 # ─────────────────────────────────────────────────────────────────────────────
+
+NC_FILE = "I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/output/" + datestring + "/innsbruck_1C01_" + datestring + ".nc"
+
+assert os.path.isfile(NC_FILE), f"NC file not found: {NC_FILE}"
+
+_HERE = os.path.dirname(os.path.abspath(__file__))
+assert os.path.isdir(_HERE), f"Data folder not found: {_HERE}"
+
+output_dir = os.path.join(_HERE, "plots/" + datestring + '/')
+
+# Make output directory if it doesn't exist
+os.makedirs(output_dir, exist_ok=True)
 
 
 def unix_to_dt(unix_arr):
@@ -40,28 +55,30 @@ for name, var in ds.variables.items():
 
 # ── Pull core arrays ──────────────────────────────────────────────────────────
 time_unix = ds["time"][:]
-time_dt   = unix_to_dt(time_unix)
-freq      = ds["frequency"][:]          # GHz
+time_dt = unix_to_dt(time_unix)
+freq = ds["frequency"][:]  # GHz
 
-tb        = ds["tb"][:]                 # (time, frequency)  K
-ele       = ds["elevation_angle"][:]    # degrees
-azi       = ds["azimuth_angle"][:]      # degrees
-qflag     = ds["quality_flag"][:]       # (time, frequency)
+tb = ds["tb"][:]  # (time, frequency)  K
+ele = ds["elevation_angle"][:]  # degrees
+azi = ds["azimuth_angle"][:]  # degrees
+qflag = ds["quality_flag"][:]  # (time, frequency)
+
 
 # MET variables (may not all be present — guard each)
 def safe(var):
     return ds[var][:] if var in ds.variables else None
 
-t_air  = safe("air_temperature")        # K
-rh     = safe("relative_humidity")      # 1
-p_air  = safe("air_pressure")           # Pa
-rain   = safe("rainfall_rate")          # mm/h
-irt    = safe("irt")                    # K  (infrared TB)
+
+t_air = safe("air_temperature")  # K
+rh = safe("relative_humidity")  # 1
+p_air = safe("air_pressure")  # Pa
+rain = safe("rainfall_rate")  # mm/h
+irt = safe("irt")  # K  (infrared TB)
 
 # ── 2. Brightness temperatures ───────────────────────────────────────────────
 # Only zenith scans (elevation ~90°)
 zenith_mask = (ele > 89.0) & (ele < 91.0)
-t_zen  = [t for t, m in zip(time_dt, zenith_mask) if m]
+t_zen = [t for t, m in zip(time_dt, zenith_mask) if m]
 tb_zen = tb[zenith_mask, :]
 
 fig, axes = plt.subplots(2, 1, figsize=(12, 7), sharex=True)
@@ -89,7 +106,7 @@ ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
 ax.set_xlabel("Time (UTC)")
 
 plt.tight_layout()
-plt.savefig("tb_timeseries.png", dpi=150)
+plt.savefig(output_dir + datestring + "_tb_timeseries.png", dpi=150)
 plt.show()
 
 # ── 3. Scan geometry ─────────────────────────────────────────────────────────
@@ -102,7 +119,7 @@ ax2.set_ylabel("Azimuth  [°]")
 ax2.set_xlabel("Time (UTC)")
 ax2.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
 plt.tight_layout()
-plt.savefig("scan_geometry.png", dpi=150)
+plt.savefig(output_dir + datestring + "_scan_geometry.png", dpi=150)
 plt.show()
 
 # ── 4. Quality flags (bitmap heatmap) ────────────────────────────────────────
@@ -120,15 +137,15 @@ ax.set_xlabel("Time (UTC)")
 ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
 ax.set_title("Quality flags (all scans)")
 plt.tight_layout()
-plt.savefig("quality_flags.png", dpi=150)
+plt.savefig(output_dir + datestring + "_quality_flags.png", dpi=150)
 plt.show()
 
 # ── 5. MET data ───────────────────────────────────────────────────────────────
 met_vars = {
-    "air_temperature [K]":    t_air,
-    "relative_humidity [1]":  rh,
-    "air_pressure [Pa]":      p_air,
-    "rainfall_rate [mm/h]":   rain,
+    "air_temperature [K]": t_air,
+    "relative_humidity [1]": rh,
+    "air_pressure [Pa]": p_air,
+    "rainfall_rate [mm/h]": rain,
 }
 met_available = {k: v for k, v in met_vars.items() if v is not None}
 
@@ -143,7 +160,7 @@ if met_available:
     axes[-1].set_xlabel("Time (UTC)")
     axes[-1].xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     plt.tight_layout()
-    plt.savefig("met_data.png", dpi=150)
+    plt.savefig(output_dir + datestring + "_met_data.png", dpi=150)
     plt.show()
 
 # ── 6. IRT (infrared TB) ──────────────────────────────────────────────────────
@@ -155,7 +172,7 @@ if irt is not None:
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax.set_title("Infrared brightness temperature")
     plt.tight_layout()
-    plt.savefig("irt.png", dpi=150)
+    plt.savefig(output_dir + datestring + "_irt.png", dpi=150)
     plt.show()
 
 ds.close()
