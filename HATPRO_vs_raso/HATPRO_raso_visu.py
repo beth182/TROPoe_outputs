@@ -57,8 +57,8 @@ HATPRO_HEIGHTS_KM = np.array([
 # Maximum time difference (minutes) between sonde launch and HATPRO retrieval
 MATCH_WINDOW_MIN = 10
 
-# HATPRO instrument altitude above sea level (Kolsass i-Box, ~545 m asl)
-HATPRO_SITE_ELEV_M = 545.0  # 612.0
+# HATPRO instrument altitude above sea level (Kolsass i-Box, ~545 m asl, Innsbruck, ~612 m asl)
+HATPRO_SITE_ELEV_M = 612.0
 
 # ---------------------------------------------------------------------------
 # Data loading
@@ -100,6 +100,104 @@ def load_hatpro_met(met_path):
                      parse_dates=True)
     df.index = pd.to_datetime(df.index, utc=False)
     return df
+
+
+# ---------------------------------------------------------------------------
+# TROPoe loading and matching
+# ---------------------------------------------------------------------------
+
+def load_tropoe(path, site_elev_m=HATPRO_SITE_ELEV_M):
+    """
+    Load a TROPoe NetCDF retrieval file.
+
+    Temperature is converted from °C to K.
+    Absolute humidity [g/m³] is derived from TROPoe's own rh [%] and
+    temperature [K] using Hannah's conversion (Scheiber 2025 / Koutsoyiannis
+    2012) — no cross-instrument data used.
+
+    Parameters
+    ----------
+    path        : str or Path
+    site_elev_m : float  station elevation [m asl] — used to store alongside
+                  the height grid for reference; TROPoe heights are already
+                  agl so no offset is applied here.
+
+    Returns
+    -------
+    tropoe_temp : DataFrame  index=datetime [K],   columns=55 height levels
+    tropoe_hum  : DataFrame  index=datetime [g/m³], columns=55 height levels
+    tropoe_heights_km : 1-D array  [km agl]
+    """
+    import netCDF4 as nc
+    import numpy as np
+
+    ds = nc.Dataset(path)
+
+    # Height grid [km agl]
+    heights_km = ds["height"][:].data
+
+    # Timestamps — base_time (epoch seconds) + time_offset (seconds)
+    base_time = float(ds["base_time"][:])
+    offsets = ds["time_offset"][:].data
+    timestamps = pd.to_datetime(base_time + offsets, unit="s")
+
+    # Temperature: °C → K
+    temp_k = ds["temperature"][:].data + 273.15  # (48, 55)
+
+    # Absolute humidity via Hannah's conversion using TROPoe rh + temperature
+    rh = ds["rh"][:].data  # (48, 55) [%]
+    abs_hum = sonde_rh_to_abs_humidity(rh, temp_k)  # (48, 55) [g/m³]
+
+    ds.close()
+
+    tropoe_temp = pd.DataFrame(temp_k, index=timestamps)
+    tropoe_hum = pd.DataFrame(abs_hum, index=timestamps)
+
+    return tropoe_temp, tropoe_hum, heights_km
+
+
+def match_tropoe_to_sonde(tropoe_temp, tropoe_hum, sonde_launch_time,
+                          window_min=MATCH_WINDOW_MIN):
+    """
+    Find the TROPoe profile closest in time to a sonde launch.
+
+    Uses the same matching logic as match_hatpro_to_sonde: prefer the first
+    timestep within `window_min` minutes after launch, fall back to the
+    closest within `window_min` minutes before.
+
+    Parameters
+    ----------
+    tropoe_temp       : DataFrame  (datetime index, 55 columns)
+    tropoe_hum        : DataFrame  (datetime index, 55 columns)
+    sonde_launch_time : datetime (timezone-aware UTC)
+    window_min        : int
+
+    Returns
+    -------
+    matched_time  : Timestamp or None
+    temp_profile  : 1-D array [K] or None
+    hum_profile   : 1-D array [g/m³] or None
+    """
+    launch_naive = sonde_launch_time.replace(tzinfo=None)
+    delta = tropoe_temp.index - launch_naive
+    window = pd.Timedelta(minutes=window_min)
+
+    after_mask = (delta >= pd.Timedelta(0)) & (delta <= window)
+    if after_mask.any():
+        idx = delta[after_mask].argmin()
+        matched_time = tropoe_temp.index[after_mask][idx]
+    else:
+        before_mask = (delta < pd.Timedelta(0)) & (delta >= -window)
+        if before_mask.any():
+            idx = (-delta[before_mask]).argmin()
+            matched_time = tropoe_temp.index[before_mask][idx]
+        else:
+            return None, None, None
+
+    temp_profile = tropoe_temp.loc[matched_time].values.astype(float)
+    hum_profile = tropoe_hum.loc[matched_time].values.astype(float)
+    return matched_time, temp_profile, hum_profile
+
 
 
 def load_radiosonde(path):
@@ -358,36 +456,46 @@ def match_hatpro_to_sonde(hatpro_temp, hatpro_hum, sonde_launch_time,
 
 
 def build_comparison_table(sondes, hatpro_temp, hatpro_hum,
-                            hatpro_heights_km=HATPRO_HEIGHTS_KM,
-                            site_elev_m=HATPRO_SITE_ELEV_M,
-                            window_min=MATCH_WINDOW_MIN):
+                           tropoe_temp=None, tropoe_hum=None,
+                           tropoe_heights_km=None,
+                           hatpro_heights_km=HATPRO_HEIGHTS_KM,
+                           site_elev_m=HATPRO_SITE_ELEV_M,
+                           window_min=MATCH_WINDOW_MIN):
     """
-    For every sonde, match a HATPRO retrieval and interpolate the sonde
-    onto HATPRO height levels.
+    For every sonde, match a HATPRO retrieval (and optionally a TROPoe
+    retrieval) and interpolate the sonde onto HATPRO height levels.
 
     Parameters
     ----------
-    sondes       : list of (meta, data) as returned by load_all_radiosondes
-    hatpro_temp  : DataFrame
-    hatpro_hum   : DataFrame
+    sondes            : list of (meta, data) as returned by load_all_radiosondes
+    hatpro_temp       : DataFrame
+    hatpro_hum        : DataFrame
+    tropoe_temp       : DataFrame or None
+    tropoe_hum        : DataFrame or None
+    tropoe_heights_km : 1-D array or None
     hatpro_heights_km : array
-    site_elev_m  : float
-    window_min   : int
+    site_elev_m       : float
+    window_min        : int
 
     Returns
     -------
     list of dicts, one per matched sonde, each containing:
-        'launch_time'      datetime
-        'kind'             'ascent' or 'descent'
-        'hatpro_time'      Timestamp of matched HATPRO retrieval
-        'heights_km'       array [km agl]
-        'hatpro_temp'      array [K]
-        'hatpro_hum'       array [g/m³]
-        'sonde_temp'       array [K]  interpolated to HATPRO levels
-        'sonde_abs_hum'    array [g/m³] absolute humidity from mixing ratio
-        'sonde_rh'         array [%]  (retained for future use)
-        'sonde_mixr'       array [g/kg] (retained for future use)
-        'sonde_data_raw'   full sonde DataFrame (for future use)
+        'launch_time'       datetime
+        'kind'              'ascent' or 'descent'
+        'hatpro_time'       Timestamp of matched HATPRO retrieval
+        'heights_km'        array [km agl]
+        'hatpro_temp'       array [K]
+        'hatpro_hum'        array [g/m³]
+        'hatpro_rh'         array [%]
+        'tropoe_time'       Timestamp or None
+        'tropoe_temp'       array [K] or None  (on TROPoe native height grid)
+        'tropoe_hum'        array [g/m³] or None
+        'tropoe_heights_km' array or None
+        'sonde_temp'        array [K]  interpolated to HATPRO levels
+        'sonde_abs_hum'     array [g/m³] absolute humidity from RH+T
+        'sonde_rh'          array [%]  (retained for future use)
+        'sonde_mixr'        array [g/kg] (retained for future use)
+        'sonde_data_raw'    full sonde DataFrame (for future use)
     """
     results = []
     for meta, sonde_data in sondes:
@@ -401,6 +509,9 @@ def build_comparison_table(sondes, hatpro_temp, hatpro_hum,
         interp = interpolate_sonde_to_hatpro_levels(
             sonde_data, hatpro_heights_km, site_elev_m)
 
+        # Convert HATPRO absolute humidity + HATPRO temperature → RH
+        hatpro_rh = hatpro_abs_hum_to_rh(hum_prof, temp_prof)
+
         # Convert sonde RH + sonde temperature → absolute humidity [g/m³]
         # following Scheiber (2025) / Koutsoyiannis (2012)
         sonde_abs_hum = sonde_rh_to_abs_humidity(
@@ -408,21 +519,35 @@ def build_comparison_table(sondes, hatpro_temp, hatpro_hum,
             interp.get("air_temperature"),
         )
 
+        # --- TROPoe match (optional) ---
+        t_time, t_temp, t_hum = None, None, None
+        if tropoe_temp is not None:
+            t_time, t_temp, t_hum = match_tropoe_to_sonde(
+                tropoe_temp, tropoe_hum, meta["launch_time"], window_min)
+            if t_time is None:
+                print(f"  [!] No TROPoe match for {meta['launch_time']}")
+
         results.append({
-            "launch_time":    meta["launch_time"],
-            "kind":           meta["kind"],
-            "hatpro_time":    matched_time,
-            "heights_km":     hatpro_heights_km,
-            "hatpro_temp":    temp_prof,
-            "hatpro_hum":     hum_prof,
-            "sonde_temp":     interp.get("air_temperature"),
-            "sonde_abs_hum":  sonde_abs_hum,
-            "sonde_rh":       interp.get("relative_humidity"),
-            "sonde_mixr":     interp.get("humidity_mixing_ratio"),
+            "launch_time": meta["launch_time"],
+            "kind": meta["kind"],
+            "hatpro_time": matched_time,
+            "heights_km": hatpro_heights_km,
+            "hatpro_temp": temp_prof,
+            "hatpro_hum": hum_prof,
+            "hatpro_rh": hatpro_rh,
+            "tropoe_time": t_time,
+            "tropoe_temp": t_temp,
+            "tropoe_hum": t_hum,
+            "tropoe_heights_km": tropoe_heights_km,
+            "sonde_temp": interp.get("air_temperature"),
+            "sonde_abs_hum": sonde_abs_hum,
+            "sonde_rh": interp.get("relative_humidity"),
+            "sonde_mixr": interp.get("humidity_mixing_ratio"),
             "sonde_data_raw": sonde_data,
         })
         print(f"  Matched {meta['kind']:7s} @ {meta['launch_time']} "
-              f"-> HATPRO @ {matched_time}")
+              f"-> HATPRO @ {matched_time}"
+              + (f", TROPoe @ {t_time}" if t_time is not None else ", TROPoe: no match"))
     return results
 
 
@@ -431,7 +556,7 @@ def build_comparison_table(sondes, hatpro_temp, hatpro_hum,
 # ---------------------------------------------------------------------------
 
 def plot_profile_comparison(comparison_table, max_height_km=10.0,
-                             save_path=None):
+                            save_path=None):
     """
     Plot HATPRO vs radiosonde temperature and humidity profiles for every
     matched sonde in a grid layout.
@@ -472,6 +597,12 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
         ax_t.plot(entry["sonde_temp"][mask], heights[mask],
                   color="tab:blue", linewidth=1.2, linestyle="--",
                   marker="o", markersize=3, markevery=3, label="Sonde")
+        if entry["tropoe_temp"] is not None:
+            t_heights = entry["tropoe_heights_km"]
+            t_mask = t_heights <= max_height_km
+            ax_t.plot(entry["tropoe_temp"][t_mask], t_heights[t_mask],
+                      color="tab:orange", linewidth=1.2, linestyle=":",
+                      label="TROPoe")
         ax_t.set_title(title, fontsize=9)
         if col == 0:
             ax_t.set_ylabel("Height agl [km]", fontsize=9)
@@ -488,6 +619,10 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
         ax_h.plot(entry["sonde_abs_hum"][mask], heights[mask],
                   color="tab:blue", linewidth=1.2, linestyle="--",
                   marker="o", markersize=3, markevery=3, label="Sonde")
+        if entry["tropoe_hum"] is not None:
+            ax_h.plot(entry["tropoe_hum"][t_mask], t_heights[t_mask],
+                      color="tab:orange", linewidth=1.2, linestyle=":",
+                      label="TROPoe")
         if col == 0:
             ax_h.set_ylabel("Height agl [km]", fontsize=9)
         ax_h.set_xlabel("Abs. humidity [g/m³]", fontsize=8)
@@ -529,6 +664,7 @@ if __name__ == "__main__":
     hatpro_temp_path = DATA_DIR / "data_temperature.csv"
     hatpro_hum_path  = DATA_DIR / "data_humidity.csv"
     hatpro_met_path  = DATA_DIR / "data_met.csv"
+    tropoe_path = os.path.join(DATA_DIR, "tropoe_innsbruck.c1." + datestring + ".000015.nc")
 
     sonde_paths = sorted(SONDE_DIR.glob("raso_teamx_wEOP_kolsass_*.csv"))
 
@@ -537,12 +673,19 @@ if __name__ == "__main__":
     hatpro_temp, hatpro_hum = load_hatpro_profiles(hatpro_temp_path, hatpro_hum_path)
     hatpro_met = load_hatpro_met(hatpro_met_path)
 
+    print("Loading TROPoe data...")
+    tropoe_temp, tropoe_hum, tropoe_heights_km = load_tropoe(tropoe_path)
+
     print(f"Loading {len(sonde_paths)} radiosonde files...")
     sondes = load_all_radiosondes(sonde_paths)
 
     # --- Match and interpolate ---
     print("Matching and interpolating...")
-    comparison = build_comparison_table(sondes, hatpro_temp, hatpro_hum)
+    comparison = build_comparison_table(
+        sondes, hatpro_temp, hatpro_hum,
+        tropoe_temp=tropoe_temp, tropoe_hum=tropoe_hum,
+        tropoe_heights_km=tropoe_heights_km,
+    )
 
     # --- Visualise ---
     print("Plotting...")
