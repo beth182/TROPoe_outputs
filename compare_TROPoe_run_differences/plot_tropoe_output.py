@@ -23,6 +23,9 @@ import matplotlib.dates as mdates
 from datetime import datetime, timezone
 from scipy.interpolate import interp1d
 import netCDF4 as nc
+import os
+
+print('Imports complete')
 
 # TODO: move out all single visualisation functions to separate place to be used again
 # TODO: Change save plot function locations to plot directory
@@ -548,10 +551,12 @@ def plot_diff_mean_profile(da, db_a, label_a, label_b, out_prefix):
 # CONFIGURATION — edit these
 # ══════════════════════════════════════════════════════════════════════════════
 
+datestring = '20250219'
 
 # Path to your TROPoe output file
 # FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
-FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/beth_innit/tropoe/hatpro/tropoe_innsbruck.c1.20260408.000015.nc'
+FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/beth_' + datestring + '/tropoe/hatpro/tropoe_innsbruck.c1.' + datestring + '.000015.nc'
+
 # Path to a second file for comparison (set to None to skip)
 # FILE_B = 'I:/User/Documents/Research/Running_TROPoe/Download from Dave/beth_saunders/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
 FILE_B = None
@@ -561,7 +566,17 @@ LABEL_A = 'Beth'
 LABEL_B = 'Dave'
 
 PROFILE_TIME = 12.0  # UTC hour for single-profile plot; None = midpoint of file
-OUT_PREFIX = 'tropoe'
+
+
+
+# Data lives in test_day_data/ next to this script
+_HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Make output directory if it doesn't exist
+outdir = _HERE + '/plots/' + datestring + '/'
+os.makedirs(outdir, exist_ok=True)
+
+OUT_PREFIX = outdir + datestring + '_tropoe'
 
 H_MAX_T = 10.0  # height ceiling for temperature/theta plots (km)
 H_MAX_WV = 6.0  # height ceiling for moisture plots (km)
