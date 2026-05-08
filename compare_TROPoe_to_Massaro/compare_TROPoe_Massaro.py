@@ -34,6 +34,8 @@ import matplotlib.dates as mdates
 
 # --- CONFIGURATION -------------------------------------------------------------
 
+datestring = '20250219'
+
 # HATPRO retrieval height grid [km above station]
 # from 26040823_CMP_TPC.NC altitude_layers (m -> km)
 HATPRO_HEIGHTS_KM = np.array([
@@ -49,20 +51,26 @@ TIMESERIES_HEIGHTS_KM = [0.1, 0.5, 1.0, 2.0, 4.0]
 
 # Data lives in test_day_data/ next to this script
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_DATA = os.path.join(_HERE, "test_day_data")
+_DATA = os.path.join(_HERE, "data/" + datestring + '/')
 
-NC_FILE    = os.path.join(_DATA, "tropoe_innsbruck.c1.20260408.000015.nc")
+assert os.path.isdir(_DATA), f"Data folder not found: {_DATA}"
+
+outdir = os.path.join(_HERE, "plots/" + datestring + '/')
+# Make output directory if it doesn't exist
+os.makedirs(outdir, exist_ok=True)
+
+NC_FILE    = os.path.join(_DATA, "tropoe_innsbruck.c1." + datestring + ".000015.nc")
 T_CSV      = os.path.join(_DATA, "data_temperature.csv")
 Q_CSV      = os.path.join(_DATA, "data_humidity.csv")
 MET_CSV    = os.path.join(_DATA, "data_met.csv")
-OUT_PREFIX = os.path.join(_HERE, "comparison")
+OUT_PREFIX = os.path.join(outdir, datestring + "_comparison")
 
 # --- DATA LOADING --------------------------------------------------------------
 
 def load_tropoe(nc_path):
     """Load TROPoe temperature, water vapour, and height from NetCDF."""
     ds      = nc.Dataset(nc_path)
-    base_dt = pd.Timestamp("2026-04-08 00:00:00")
+    base_dt = pd.to_datetime(datestring, format='%Y%m%d')
     hours   = ds.variables["hour"][:]
     times   = pd.to_datetime([base_dt + pd.Timedelta(hours=float(h)) for h in hours])
     heights = ds.variables["height"][:].data          # km, (55,)
@@ -96,8 +104,9 @@ def plot_mean_profiles(trop_hgt, trop_T, trop_wv,
                        out_prefix):
     """Two-panel time-mean profile plot -- each dataset on its own height grid."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 7))
-    fig.suptitle("TROPoe vs HATPRO -- time-mean profiles\n2026-04-08  |  Innsbruck",
-                 fontsize=12)
+    fig.suptitle(
+        f"TROPoe vs HATPRO -- time-mean profiles\n{datestring[:4]}-{datestring[4:6]}-{datestring[6:8]}  |  Innsbruck",
+        fontsize=12)
 
     ax1.plot(np.nanmean(hat_T_C, axis=0), hat_hgt,  "C1-o", ms=3, label="HATPRO")
     ax1.plot(np.nanmean(trop_T,  axis=0), trop_hgt, "C0-s", ms=3, label="TROPoe")
@@ -134,7 +143,7 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
     fig, axes = plt.subplots(n_levels, 2,
                              figsize=(14, 3 * n_levels),
                              sharex=True)
-    fig.suptitle("TROPoe vs HATPRO -- time series  |  2026-04-08", fontsize=12)
+    fig.suptitle(f"TROPoe vs HATPRO -- time series  |  {datestring[:4]}-{datestring[4:6]}-{datestring[6:8]}", fontsize=12)
 
     for row, target_h in enumerate(target_heights_km):
         k_hat  = np.argmin(np.abs(hat_hgt  - target_h))
