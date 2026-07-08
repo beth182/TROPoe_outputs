@@ -556,53 +556,74 @@ def build_comparison_table(sondes, hatpro_temp, hatpro_hum,
 # ---------------------------------------------------------------------------
 
 def plot_profile_comparison(comparison_table, max_height_km=10.0,
-                            save_path=None):
+                             save_path=None):
     """
-    Plot HATPRO vs radiosonde temperature and humidity profiles for every
-    matched sonde in a grid layout.
+    Plot HATPRO, TROPoe, and radiosonde temperature and humidity profiles
+    for every matched sonde. One column per launch, two rows (T | q).
 
-    One column per sonde launch, two rows (temperature | humidity).
+    Each dataset is plotted on its own native height grid — no interpolation
+    applied. Small markers show individual data points on each grid.
+
+    HATPRO : 39 levels, plotted on HATPRO grid
+    TROPoe : 55 levels (49 below 10 km), plotted on TROPoe grid
+    Sonde  : native high-resolution ascent profile
+
+    Colours: HATPRO = red, TROPoe = green, Sonde = black
 
     Parameters
     ----------
     comparison_table : list of dicts (from build_comparison_table)
-    max_height_km    : float  upper limit of y-axis [km agl]
-    save_path        : str or Path or None  — if given, saves the figure
+    max_height_km    : float
+    save_path        : str or Path or None
     """
     n = len(comparison_table)
     if n == 0:
         print("No matched sondes to plot.")
         return
 
-    fig, axes = plt.subplots(
-        2, n,
-        figsize=(3.5 * n, 10),
-        sharey=True,
-        constrained_layout=True,
-    )
+    fig, axes = plt.subplots(2, n, figsize=(3.5 * n, 10),
+                              sharey=True, constrained_layout=True)
     if n == 1:
         axes = axes.reshape(2, 1)
 
-    for col, entry in enumerate(comparison_table):
-        heights = entry["heights_km"]
-        mask = heights <= max_height_km
+    plot_kwargs = dict(linewidth=1.2, markersize=3)
 
-        launch_dt = entry["launch_time"]
-        title = f"{launch_dt.strftime('%H:%M')} UTC"
+    for col, entry in enumerate(comparison_table):
+
+        # --- HATPRO on its native grid ---
+        h_heights = entry["heights_km"]
+        h_mask    = h_heights <= max_height_km
+
+        # --- TROPoe on its native grid ---
+        if entry["tropoe_temp"] is not None:
+            t_heights = entry["tropoe_heights_km"]
+            t_mask    = t_heights <= max_height_km
+
+        # --- Sonde on its native high-resolution grid ---
+        sonde_raw    = entry["sonde_data_raw"]
+        sonde_z_m    = sonde_raw["geopotential_height"].values
+        sonde_z_km   = (sonde_z_m - HATPRO_SITE_ELEV_M) / 1000.0
+        sonde_mask   = (sonde_z_km >= 0) & (sonde_z_km <= max_height_km)
+
+        sonde_temp   = sonde_raw["air_temperature"].values
+        sonde_abshum = sonde_rh_to_abs_humidity(
+            sonde_raw["relative_humidity"].values,
+            sonde_raw["air_temperature"].values,
+        )
+
+        title = entry["launch_time"].strftime("%H:%M") + " UTC"
 
         # --- Temperature ---
         ax_t = axes[0, col]
-        ax_t.plot(entry["hatpro_temp"][mask], heights[mask],
-                  color="tab:red", linewidth=1.8, label="HATPRO")
-        if entry["tropoe_temp"] is not None:
-            t_heights = entry["tropoe_heights_km"]
-            t_mask = t_heights <= max_height_km
-            ax_t.plot(entry["tropoe_temp"][t_mask], t_heights[t_mask],
-                      color="tab:green", linewidth=1.8,
-                      label="TROPoe")
-        ax_t.plot(entry["sonde_temp"][mask], heights[mask],
-                  color="k", linewidth=1.2, linestyle="--",
+        ax_t.plot(entry["hatpro_temp"][h_mask], h_heights[h_mask],
+                  color="tab:red", marker="o", label="HATPRO", **plot_kwargs)
+        ax_t.plot(sonde_temp[sonde_mask], sonde_z_km[sonde_mask],
+                  color="black", marker=".", markersize=2, linewidth=1.0,
                   label="Sonde")
+        if entry["tropoe_temp"] is not None:
+            ax_t.plot(entry["tropoe_temp"][t_mask], t_heights[t_mask],
+                      color="tab:green", marker="^", markersize=3,
+                      linewidth=1.2, label="TROPoe")
         ax_t.set_title(title, fontsize=9)
         if col == 0:
             ax_t.set_ylabel("Height agl [km]", fontsize=9)
@@ -614,15 +635,15 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
 
         # --- Absolute humidity ---
         ax_h = axes[1, col]
-        ax_h.plot(entry["hatpro_hum"][mask], heights[mask],
-                  color="tab:red", linewidth=1.8, label="HATPRO")
+        ax_h.plot(entry["hatpro_hum"][h_mask], h_heights[h_mask],
+                  color="tab:red", marker="o", label="HATPRO", **plot_kwargs)
+        ax_h.plot(sonde_abshum[sonde_mask], sonde_z_km[sonde_mask],
+                  color="black", marker=".", markersize=2, linewidth=1.0,
+                  label="Sonde")
         if entry["tropoe_hum"] is not None:
             ax_h.plot(entry["tropoe_hum"][t_mask], t_heights[t_mask],
-                      color="tab:green", linewidth=1.8,
-                      label="TROPoe")
-        ax_h.plot(entry["sonde_abs_hum"][mask], heights[mask],
-                  color="k", linewidth=1.2, linestyle="--",
-                  label="Sonde")
+                      color="tab:green", marker="^", markersize=3,
+                      linewidth=1.2, label="TROPoe")
         if col == 0:
             ax_h.set_ylabel("Height agl [km]", fontsize=9)
         ax_h.set_xlabel("Abs. humidity [g/m³]", fontsize=8)
@@ -632,12 +653,12 @@ def plot_profile_comparison(comparison_table, max_height_km=10.0,
             ax_h.legend(fontsize=7, loc="upper right")
 
     fig.suptitle(
-        f"{comparison_table[0]['launch_time'].strftime('%Y-%m-%d')}",
+        comparison_table[0]['launch_time'].strftime('%Y-%m-%d'),
         fontsize=12, fontweight="bold"
     )
 
     if save_path:
-        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+        fig.savefig(save_path, dpi=150, bbox_inches="tight")
         print(f"  Figure saved to {save_path}")
 
     return fig
