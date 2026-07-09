@@ -32,6 +32,6 @@ for year, doy in unique_doys:
     # print(f"{year}-{doy:03d}")
     just_DOY_list.append(f"{doy:03d}")
 
-
+df.to_csv('./date_list.csv')
 
 print('end')
