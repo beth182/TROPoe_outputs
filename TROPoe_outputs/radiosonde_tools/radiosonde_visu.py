@@ -12,16 +12,18 @@ import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 import pandas as pd
 
+from TROPoe_outputs import lookup
+
 # ── paths ─────────────────────────────────────────────────────────────────────
 
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_DATA = os.path.join(_HERE, "sonde_data_20250219")
+_DATA = os.path.join(lookup.data_location + 'radiosonde_processed_csv_data_TEAMx/')
 DATA_DIR = Path(_DATA)
 assert os.path.isdir(DATA_DIR), f"Data folder not found: {DATA_DIR}"
 
-# derive date string from folder name for the output subfolder
-_date_str = DATA_DIR.name.replace("sonde_data_", "")   # e.g. "20250219"
-PLOT_DIR = Path(_HERE) / "plots" / _date_str
+# derive date string
+_date_str = "20250219"
+
+PLOT_DIR = Path(lookup.plot_save_location + "raso_visu/TOC/" + _date_str)
 PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
 # ── load ──────────────────────────────────────────────────────────────────────
@@ -55,8 +57,8 @@ def load_raso(filepath):
     return df
 
 
-asc_files  = sorted(DATA_DIR.glob("*ascent.csv"))
-desc_files = sorted(DATA_DIR.glob("*descent.csv"))
+asc_files = sorted(DATA_DIR.glob("*" + _date_str +"*ascent.csv"))
+desc_files = sorted(DATA_DIR.glob("*" + _date_str +"*descent.csv"))
 
 assert asc_files,  f"No ascent CSVs found in {DATA_DIR}"
 assert desc_files, f"No descent CSVs found in {DATA_DIR}"
@@ -143,3 +145,5 @@ out_path = PLOT_DIR / "raso_profiles.png"
 fig.savefig(out_path, dpi=160, bbox_inches="tight", facecolor="white")
 plt.close(fig)
 print(f"Saved → {out_path}")
+
+print('end')
