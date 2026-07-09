@@ -29,7 +29,7 @@ from TROPoe_outputs import lookup
 # CONFIG - edit these paths/settings before running
 # ----------------------------------------------------------------------
 
-CSV_PATH = Path(r"/TROPoe_outputs/extract_radiosonde_dates/date_list.csv")
+CSV_PATH = Path(r"/TROPoe_outputs/extract_IOP_dates/date_list.csv")
 
 SOURCE_BASE = Path(r"Z:\rawdata\hatpro")
 DEST_BASE = Path(lookup.data_location + "/raw_HATPRO/TOC")
