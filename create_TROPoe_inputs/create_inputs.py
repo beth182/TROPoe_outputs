@@ -4,37 +4,50 @@ from mwrpy.level1.write_lev1_nc import lev1_to_nc
 
 print('imports complete')
 
-datestring = '20250219'
+# Base paths (parent dirs containing one subfolder per date, e.g. 20250219/)
+base_raw_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/data/TOC/"
+base_output_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
 
-# Paths
-path_to_raw = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/data/" + datestring + '/'
-output_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/output/" + datestring + '/'
-output_file = os.path.join(output_dir, "innsbruck_1C01_" + datestring + ".nc")
+# Find all subdirectories of base_raw_dir that look like dates (YYYYMMDD)
+datestrings = []
+for name in sorted(os.listdir(base_raw_dir)):
+    full_path = os.path.join(base_raw_dir, name)
+    if not os.path.isdir(full_path):
+        continue
+    try:
+        datetime.datetime.strptime(name, '%Y%m%d')
+    except ValueError:
+        continue  # not a date-named folder, skip it
+    datestrings.append(name)
 
-# Date of your test data (filename 26040804 = 2026-04-08)
-dt = datetime.datetime.strptime(datestring, '%Y%m%d')
+print(f"Found {len(datestrings)} date folders: {datestrings}")
 
-year = dt.year  # 2025
-month = dt.month  # 2
-day = dt.day  # 19
+# Process each date
+for datestring in datestrings:
+    print(f"\n--- Processing {datestring} ---")
 
-date = datetime.date(year, month, day)
+    path_to_raw = os.path.join(base_raw_dir, datestring) + '/'
+    output_dir = os.path.join(base_output_dir, datestring) + '/'
+    output_file = os.path.join(output_dir, "innsbruck_1C01_" + datestring + ".nc")
 
-# Make output directory if it doesn't exist
-os.makedirs(output_dir, exist_ok=True)
+    dt = datetime.datetime.strptime(datestring, '%Y%m%d')
+    date = datetime.date(dt.year, dt.month, dt.day)
 
-print('created out dir:', output_dir)
+    os.makedirs(output_dir, exist_ok=True)
+    print('created out dir:', output_dir)
 
-# Run MWRpy Level 1C processing
-lev1_to_nc(
-    data_type="1C01",  # Combined TB + MET + IRT — E-PROFILE format
-    path_to_files=path_to_raw,
-    site="innsbruck",
-    output_file=output_file,
-    date=date,
-    instrument_type="hatpro",
-)
+    try:
+        lev1_to_nc(
+            data_type="1C01",
+            path_to_files=path_to_raw,
+            site="innsbruck",
+            output_file=output_file,
+            date=date,
+            instrument_type="hatpro",
+        )
+        print(f"Done — output at: {output_file}")
+    except Exception as e:
+        print(f"FAILED for {datestring}: {e}")
+        continue
 
-print(f"Done — output at: {output_file}")
-
-print('end')
+print('\nend')
