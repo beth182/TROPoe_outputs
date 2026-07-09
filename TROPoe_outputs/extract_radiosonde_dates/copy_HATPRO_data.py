@@ -21,7 +21,9 @@ from pathlib import Path
 from datetime import date
 
 import pandas as pd
+import os
 
+from TROPoe_outputs import lookup
 
 # ----------------------------------------------------------------------
 # CONFIG - edit these paths/settings before running
@@ -30,7 +32,8 @@ import pandas as pd
 CSV_PATH = Path(r"/TROPoe_outputs/extract_radiosonde_dates/date_list.csv")
 
 SOURCE_BASE = Path(r"Z:\rawdata\hatpro")
-DEST_BASE = Path(r"/TROPoe_outputs/create_TROPoe_inputs\data\TOC")
+DEST_BASE = Path(lookup.data_location + "/raw_HATPRO/TOC")
+assert os.path.isdir(DEST_BASE), f"Data folder not found: {DEST_BASE}"
 
 DATETIME_COLUMN = "datetime"
 

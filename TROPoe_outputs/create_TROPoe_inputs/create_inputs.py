@@ -2,11 +2,16 @@ import datetime
 import os
 from mwrpy.level1.write_lev1_nc import lev1_to_nc
 
+from TROPoe_outputs import lookup
+
 print('imports complete')
 
 # Base paths (parent dirs containing one subfolder per date, e.g. 20250219/)
-base_raw_dir = r"/TROPoe_outputs/create_TROPoe_inputs/data/TOC/"
-base_output_dir = r"/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
+base_raw_dir = lookup.data_location + "/raw_HATPRO/TOC/"
+base_output_dir = lookup.data_location + "/HATPRO_input_for_TROPoe/TOC/"
+
+assert os.path.isdir(base_raw_dir), f"Data folder not found: {base_raw_dir}"
+assert os.path.isdir(base_output_dir), f"Data folder not found: {base_output_dir}"
 
 # Find all subdirectories of base_raw_dir that look like dates (YYYYMMDD)
 datestrings = []

@@ -1,9 +1,11 @@
 import os
 import re
 import pandas as pd
+from TROPoe_outputs import lookup
 
 # Hardcode your folder path
-folder = r"C:/Users/c7071147/Nextcloud/Documents/radiosonde_processed_csv_data_TEAMx/"
+folder = lookup.data_location + "radiosonde_processed_csv_data_TEAMx/"
+assert os.path.isdir(folder), f"Data folder not found: {folder}"
 
 records = []
 for fname in os.listdir(folder):

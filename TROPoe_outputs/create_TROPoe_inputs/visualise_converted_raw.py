@@ -2,6 +2,7 @@
 Visual inspection of MWRpy 1C01 output NetCDF.
 Run after create_inputs.py has produced the file(s).
 """
+from mailcap import lookup
 
 import netCDF4 as nc
 import numpy as np
@@ -10,12 +11,16 @@ import matplotlib.dates as mdates
 from datetime import datetime, timezone
 import os
 
+from TROPoe_outputs import lookup
+
 print('Imports complete')
 
 # ── config ────────────────────────────────────────────────────────────────────
-base_output_dir = r"/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
-_HERE = os.path.dirname(os.path.abspath(__file__))
-assert os.path.isdir(_HERE), f"Data folder not found: {_HERE}"
+base_output_dir = lookup.data_location + "/HATPRO_input_for_TROPoe/TOC/"
+assert os.path.isdir(base_output_dir), f"Data folder not found: {base_output_dir}"
+
+plot_dir = lookup.plot_save_location
+assert os.path.isdir(plot_dir), f"Data folder not found: {plot_dir}"
 # ─────────────────────────────────────────────────────────────────────────────
 
 # Find all subdirectories of base_output_dir that look like dates (YYYYMMDD)
@@ -48,7 +53,7 @@ def process_date(datestring):
     NC_FILE = os.path.join(base_output_dir, datestring, f"innsbruck_1C01_{datestring}.nc")
     assert os.path.isfile(NC_FILE), f"NC file not found: {NC_FILE}"
 
-    output_dir = os.path.join(_HERE, "plots/TOC/", datestring) + '/'
+    output_dir = os.path.join(plot_dir, "HATPRO_input_for_TROPoe/TOC/", datestring) + '/'
     os.makedirs(output_dir, exist_ok=True)
 
     # ── 1. Print file summary ─────────────────────────────────────────────────
