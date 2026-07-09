@@ -5,8 +5,8 @@ from mwrpy.level1.write_lev1_nc import lev1_to_nc
 print('imports complete')
 
 # Base paths (parent dirs containing one subfolder per date, e.g. 20250219/)
-base_raw_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/data/TOC/"
-base_output_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
+base_raw_dir = r"/TROPoe_outputs/create_TROPoe_inputs/data/TOC/"
+base_output_dir = r"/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
 
 # Find all subdirectories of base_raw_dir that look like dates (YYYYMMDD)
 datestrings = []

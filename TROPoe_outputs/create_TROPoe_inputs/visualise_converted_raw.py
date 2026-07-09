@@ -13,7 +13,7 @@ import os
 print('Imports complete')
 
 # ── config ────────────────────────────────────────────────────────────────────
-base_output_dir = r"I:/User/Documents/PycharmProjects/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
+base_output_dir = r"/TROPoe_outputs/create_TROPoe_inputs/output/TOC/"
 _HERE = os.path.dirname(os.path.abspath(__file__))
 assert os.path.isdir(_HERE), f"Data folder not found: {_HERE}"
 # ─────────────────────────────────────────────────────────────────────────────

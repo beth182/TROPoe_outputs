@@ -27,10 +27,10 @@ import pandas as pd
 # CONFIG - edit these paths/settings before running
 # ----------------------------------------------------------------------
 
-CSV_PATH = Path(r"I:\User\Documents\PycharmProjects\TROPoe_outputs\extract_radiosonde_dates\date_list.csv")
+CSV_PATH = Path(r"/TROPoe_outputs/extract_radiosonde_dates/date_list.csv")
 
 SOURCE_BASE = Path(r"Z:\rawdata\hatpro")
-DEST_BASE = Path(r"I:\User\Documents\PycharmProjects\TROPoe_outputs\create_TROPoe_inputs\data\TOC")
+DEST_BASE = Path(r"/TROPoe_outputs/create_TROPoe_inputs\data\TOC")
 
 DATETIME_COLUMN = "datetime"
 
