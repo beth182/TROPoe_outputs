@@ -1,0 +1,1 @@
+data_location = 'C:/Users/c7071147/Nextcloud/data/'
