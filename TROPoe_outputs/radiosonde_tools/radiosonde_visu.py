@@ -20,9 +20,6 @@ _DATA = os.path.join(lookup.data_location + 'radiosonde_processed_csv_data_TEAMx
 DATA_DIR = Path(_DATA)
 assert os.path.isdir(DATA_DIR), f"Data folder not found: {DATA_DIR}"
 
-# derive date string
-_date_str = "20250219"
-
 # ── functions ──────────────────────────────────────────────────────────────────────
 
 def parse_launch_time(filepath):
