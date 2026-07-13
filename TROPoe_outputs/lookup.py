@@ -1,3 +1,5 @@
 data_location = 'C:/Users/c7071147/Nextcloud/data/TEAMx_IOPs/'
 plot_save_location = 'I:/User/Documents/PycharmProjects/TROPoe_outputs/TROPoe_outputs/plots/'
 date_list_location = 'I:/User/Documents/PycharmProjects/TROPoe_outputs/TROPoe_outputs/extract_IOP_dates/date_list.csv'
+TROPoe_run_location = 'C:/Users/c7071147/Documents/TROPoe_run/'
+TROPoe_run_file_template_location = 'I:/User/Documents/PycharmProjects/TROPoe_outputs/TROPoe_outputs/create_TROPoe_run/run_file_templates/'

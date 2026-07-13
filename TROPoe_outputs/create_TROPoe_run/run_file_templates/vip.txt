@@ -1,0 +1,65 @@
+# VIP file for TROPoe retrieval - Innsbruck HATPRO
+# Based on Dave Turner's JOYCE example, adapted for Innsbruck site
+#
+tres = 30            # Temporal resolution [min]
+avg_instant = -1     # -1: avg with no sqrt(N), 0: avg with sqrt(N), 1: instantaneous
+
+station_lat =  47.2643  # Station latitude [degN]
+station_lon =  11.3853  # Station longitude [degE]
+station_alt =   612.0   # Station altitude [m MSL]
+
+irs_type = -1   # -1 - use MWR as master dataset (no IRS data)
+
+mwr_type = 3                        # 3 - Univ of Cologne / E-PROFILE format
+mwr_path = /data/hatpro             # Path to the MWR data
+mwr_rootname = innsbruck_1C01       # Rootname of the MWR data files
+mwr_elev_field = elevation_angle    # Name of the elevation angle field
+mwr_freq_field = frequency          # Name of the frequency field
+mwr_n_tb_fields = 14                # Number of TB fields
+mwr_tb_field_names = tb             # Name of the TB field
+mwr_tb_field1_tbmax = 100.0         # Maximum value [K] in first Tb field, used for QC
+mwr_tb_freqs = 22.24, 23.04, 23.84, 25.44, 26.24, 27.84, 31.4, 51.26, 52.28, 53.86, 54.94, 56.66, 57.3, 58.0
+mwr_tb_noise =   0.3,   0.3,   0.3,   0.3,   0.3,   0.3,  0.3,  1.00,  1.00,  0.50,  0.40,   0.3,  0.3,  0.2
+mwr_tb_bias  =   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,  0.0
+mwr_time_delta = 0.083  # Maximum time [hours] MWR zenith obs must be to sampling time
+
+mwrscan_type = 0                        # 3 - Univ of Cologne / E-PROFILE format
+mwrscan_path = /data/hatpro             # Path to the MWRscan data
+mwrscan_rootname = innsbruck_1C01       # Rootname of the MWRscan data files
+mwrscan_elev_field = elevation_angle    # Name of the elevation angle field
+mwrscan_n_tb_fields = 7                 # Number of V-band channels only
+mwrscan_tb_field_names = tb
+mwrscan_n_elevations = 10
+mwrscan_elevations = 90, 30, 19.2, 14.4, 11.4, 8.4, 6.6, 5.4, 4.8, 4.2
+mwrscan_tb_freqs = 51.26, 52.28, 53.86, 54.94, 56.66, 57.3, 58.0
+mwrscan_tb_noise =  0.25,  0.25,  0.25,  0.25,  0.25,  0.25,  0.25
+mwrscan_tb_bias  =  0.00,  0.00,  0.00,  0.00,  0.00,  0.00,  0.00
+
+ext_sfc_path = /data/hatpro             # Same file as MWR data
+ext_sfc_rootname = innsbruck_1C01
+ext_sfc_time_format = 2
+ext_sfc_temp_type = 1                   # 1 - ARM met data
+ext_sfc_temp_fieldname = air_temperature
+ext_sfc_temp_units = 2                  # 2 - degK
+ext_sfc_temp_random_error = 0.5
+ext_sfc_wv_type = 1                     # 1 - ARM met data
+ext_sfc_wv_fieldname = relative_humidity
+ext_sfc_wv_units = 2                    # 2 - fraction
+ext_sfc_rh_random_error = 3.0
+ext_sfc_relative_height = 0
+ext_sfc_pres_type = 1                   # 1 - ARM met data
+ext_sfc_pres_fieldname = air_pressure
+ext_sfc_pres_units = 3                  # 3 - Pa
+
+cbh_type = 0                        # 0 - no ceilometer data, use default height
+cbh_default_ht = 2.0                # Default CBH [km AGL]
+
+output_rootname = tropoe_innsbruck.c1
+output_path = /data/tropoe/hatpro
+output_clobber = 1                  # 1 - clobber preexisting output files
+
+recenter_prior = 1                  # 1 - recenter prior on surface met
+
+globatt_Site = Innsbruck, Austria
+globatt_Instrument = HATPRO
+globatt_Dataset_contact = Beth Saunders
