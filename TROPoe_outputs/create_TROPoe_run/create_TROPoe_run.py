@@ -27,6 +27,7 @@ TOC/{date}/
 import shutil
 from pathlib import Path
 import os
+import pandas as pd
 
 from TROPoe_outputs import lookup
 
@@ -34,8 +35,11 @@ from TROPoe_outputs import lookup
 # EDIT THESE
 # ----------------------------------------------------------------------
 
-# T0Do: update this automatically
-DATES = ["20250219"]
+date_list_csv_path = lookup.date_list_location
+df = pd.read_csv(date_list_csv_path)
+df['datetime'] = pd.to_datetime(df['datetime'])
+DATES = df['datetime'].dt.strftime('%Y%m%d').unique().tolist()
+
 
 # Where the per-date run folders will be created
 BASE_WIN = Path(lookup.TROPoe_run_location + "\TOC")
@@ -59,8 +63,21 @@ VERBOSE = 2
 TMP_PATH = "/tmp/tropoe_tmp"
 IMAGE_ID = "davidturner53/tropoe:v0.20"
 
+# If a date's tropoe/hatpro/ folder already has output in it (from a completed
+# TROPoe run), skip re-prepping that date so we don't overwrite it. Set to True
+# to force re-prep anyway.
+FORCE_REPREP = False
+
 # ----------------------------------------------------------------------
 
+def has_existing_output(tropoe_hatpro_dir: Path) -> bool:
+    """
+    True if tropoe/hatpro/ already contains TROPoe output (anything other than
+    vip.txt itself) — re-running TROPoe would clobber it since output_clobber = 1.
+    """
+    if not tropoe_hatpro_dir.exists():
+        return False
+    return any(f.is_file() and f.name != "vip.txt" for f in tropoe_hatpro_dir.iterdir())
 
 def win_to_wsl(path: Path) -> str:
     """C:\\Users\\foo -> /mnt/c/Users/foo"""
@@ -85,6 +102,22 @@ def prep_date(date: str) -> None:
     hatpro_dir = date_folder / "hatpro"
     tropoe_hatpro_dir = date_folder / "tropoe" / "hatpro"
 
+    # Check the obs source folder exists BEFORE creating anything
+    src_obs_dir = NEXTCLOUD_OBS_BASE / date
+    if not src_obs_dir.exists():
+        print(f"  SKIP [{date}]: source obs folder not found: {src_obs_dir}")
+        return
+
+    obs_files = [f for f in src_obs_dir.iterdir() if f.is_file()]
+    if not obs_files:
+        print(f"  SKIP [{date}]: source obs folder exists but has no files: {src_obs_dir}")
+        return
+
+    if has_existing_output(tropoe_hatpro_dir) and not FORCE_REPREP:
+        print(f"  SKIP [{date}]: existing output found in {tropoe_hatpro_dir} "
+              f"- not overwriting (set FORCE_REPREP=True to override)")
+        return
+
     hatpro_dir.mkdir(parents=True, exist_ok=True)
     tropoe_hatpro_dir.mkdir(parents=True, exist_ok=True)
 
@@ -97,17 +130,8 @@ def prep_date(date: str) -> None:
     (tropoe_hatpro_dir / "vip.txt").write_text(vip_text)
 
     # 3. copy obs file(s) from Nextcloud into hatpro/
-    src_obs_dir = NEXTCLOUD_OBS_BASE / date
-    if src_obs_dir.exists():
-        copied = 0
-        for f in src_obs_dir.iterdir():
-            if f.is_file():
-                shutil.copy(f, hatpro_dir / f.name)
-                copied += 1
-        if copied == 0:
-            print(f"  WARNING [{date}]: source folder exists but has no files: {src_obs_dir}")
-    else:
-        print(f"  WARNING [{date}]: source obs folder not found: {src_obs_dir}")
+    for f in obs_files:
+        shutil.copy(f, hatpro_dir / f.name)
 
     # 4. execute_line.txt
     wsl_folder = win_to_wsl(date_folder)
