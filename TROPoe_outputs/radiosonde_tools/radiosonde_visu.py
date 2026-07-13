@@ -23,19 +23,7 @@ assert os.path.isdir(DATA_DIR), f"Data folder not found: {DATA_DIR}"
 # derive date string
 _date_str = "20250219"
 
-PLOT_DIR = Path(lookup.plot_save_location + "raso_visu/TOC/" + _date_str)
-PLOT_DIR.mkdir(parents=True, exist_ok=True)
-
-# ── load ──────────────────────────────────────────────────────────────────────
-
-HEADER_ROWS = 7
-COL_NAMES = [
-    "elapsed_time", "latitude", "longitude", "geopotential_height",
-    "air_pressure", "wind_from_direction", "wind_speed",
-    "u_wind", "v_wind", "air_temperature", "dew_point_temperature",
-    "air_potential_temperature", "relative_humidity", "humidity_mixing_ratio",
-]
-
+# ── functions ──────────────────────────────────────────────────────────────────────
 
 def parse_launch_time(filepath):
     m = re.search(r"(\d{10})", str(filepath))
@@ -56,94 +44,119 @@ def load_raso(filepath):
     df["z_km"]  = df["geopotential_height"] / 1000.0
     return df
 
+# ── construct dates ──────────────────────────────────────────────────────────────────────
 
-asc_files = sorted(DATA_DIR.glob("*" + _date_str +"*ascent.csv"))
-desc_files = sorted(DATA_DIR.glob("*" + _date_str +"*descent.csv"))
+date_list_csv_path = lookup.date_list_location
+df = pd.read_csv(date_list_csv_path)
 
-assert asc_files,  f"No ascent CSVs found in {DATA_DIR}"
-assert desc_files, f"No descent CSVs found in {DATA_DIR}"
+df['datetime'] = pd.to_datetime(df['datetime'])
+datestrings = df['datetime'].dt.strftime('%Y%m%d').unique().tolist()
 
-asc_data  = [(parse_launch_time(f), load_raso(f)) for f in asc_files]
-desc_data = [(parse_launch_time(f), load_raso(f)) for f in desc_files]
+# ── loop ──────────────────────────────────────────────────────────────────────
+for _date_str in datestrings:
 
-# ── plot ──────────────────────────────────────────────────────────────────────
+    print(_date_str)
 
-asc_cmap = cm.get_cmap("tab10", len(asc_data))
+    PLOT_DIR = Path(lookup.plot_save_location + "raso_visu/TOC/" + _date_str)
+    PLOT_DIR.mkdir(parents=True, exist_ok=True)
 
-# map hour string → colour so descents can reuse the matching ascent colour
-hour_colour = {
-    label.split(":")[0]: asc_cmap(i / max(len(asc_data) - 1, 1))
-    for i, (label, _) in enumerate(asc_data)
-}
+    # ── load ──────────────────────────────────────────────────────────────────────
 
-fig, axes = plt.subplots(1, 5, figsize=(18, 9), sharey=True)
-fig.patch.set_facecolor("white")
-for ax in axes:
-    ax.set_facecolor("white")
-    ax.tick_params(colors="#333333", labelsize=9)
-    ax.spines[["top", "right"]].set_visible(False)
-    for spine in ax.spines.values():
-        spine.set_color("#bbbbbb")
-    ax.grid(True, color="#e0e0e0", lw=0.5)
+    HEADER_ROWS = 7
+    COL_NAMES = [
+        "elapsed_time", "latitude", "longitude", "geopotential_height",
+        "air_pressure", "wind_from_direction", "wind_speed",
+        "u_wind", "v_wind", "air_temperature", "dew_point_temperature",
+        "air_potential_temperature", "relative_humidity", "humidity_mixing_ratio",
+    ]
 
-ax_T, ax_Td, ax_RH, ax_ws, ax_wd = axes
-LABEL_COLOR = "#333333"
+    asc_files = sorted(DATA_DIR.glob("*" + _date_str +"*ascent.csv"))
+    desc_files = sorted(DATA_DIR.glob("*" + _date_str +"*descent.csv"))
 
-for i, (label, df) in enumerate(asc_data):
-    c  = asc_cmap(i / max(len(asc_data) - 1, 1))
-    kw = dict(color=c, lw=1.4, alpha=0.9, label=label + " ↑")
-    ax_T.plot(df["T_C"],  df["z_km"], **kw)
-    ax_Td.plot(df["Td_C"], df["z_km"], **kw)
-    ax_RH.plot(df["relative_humidity"], df["z_km"], **kw)
-    ax_ws.plot(df["wind_speed"], df["z_km"], **kw)
-    v = df[["wind_from_direction", "z_km"]].dropna()
-    ax_wd.scatter(v["wind_from_direction"], v["z_km"], color=c, s=1.0, alpha=0.8)
+    assert asc_files,  f"No ascent CSVs found in {DATA_DIR}"
+    assert desc_files, f"No descent CSVs found in {DATA_DIR}"
 
-for label, df in desc_data:
-    c  = hour_colour.get(label.split(":")[0], "black")
-    kw = dict(color=c, lw=1.1, alpha=0.8, linestyle="--", label=label + " ↓")
-    ax_T.plot(df["T_C"],  df["z_km"], **kw)
-    ax_Td.plot(df["Td_C"], df["z_km"], **kw)
-    ax_RH.plot(df["relative_humidity"], df["z_km"], **kw)
-    ax_ws.plot(df["wind_speed"], df["z_km"], **kw)
-    v = df[["wind_from_direction", "z_km"]].dropna()
-    ax_wd.scatter(v["wind_from_direction"], v["z_km"], color=c, s=1.0, alpha=0.6, marker="x")
+    asc_data  = [(parse_launch_time(f), load_raso(f)) for f in asc_files]
+    desc_data = [(parse_launch_time(f), load_raso(f)) for f in desc_files]
 
-# axis formatting
-ax_T.set_ylabel("Geopotential Height (km)", color=LABEL_COLOR, fontsize=10)
-ax_T.set_ylim(0, 22)
-ax_T.set_yticks(range(0, 23, 2))
+    # ── plot ──────────────────────────────────────────────────────────────────────
 
-for ax, xlabel in zip(axes, [
-    "Temperature (°C)", "Dew-point (°C)", "Relative Humidity (%)",
-    "Wind Speed (m s⁻¹)", "Wind Direction (°)"
-]):
-    ax.set_xlabel(xlabel, color=LABEL_COLOR, fontsize=10)
+    asc_cmap = cm.get_cmap("tab10", len(asc_data))
 
-ax_RH.set_xlim(0, 105)
-ax_RH.set_xticks([0, 25, 50, 75, 100])
-ax_wd.set_xlim(0, 360)
-ax_wd.set_xticks([0, 90, 180, 270, 360])
-ax_wd.set_xticklabels(["N", "E", "S", "W", "N"], fontsize=8)
+    # map hour string → colour so descents can reuse the matching ascent colour
+    hour_colour = {
+        label.split(":")[0]: asc_cmap(i / max(len(asc_data) - 1, 1))
+        for i, (label, _) in enumerate(asc_data)
+    }
 
-for ax, title in zip(axes, ["Temperature", "Dew-point", "Rel. Humidity", "Wind Speed", "Wind Dir."]):
-    ax.set_title(title, color="#111111", fontsize=11, fontweight="bold", pad=6)
+    fig, axes = plt.subplots(1, 5, figsize=(18, 9), sharey=True)
+    fig.patch.set_facecolor("white")
+    for ax in axes:
+        ax.set_facecolor("white")
+        ax.tick_params(colors="#333333", labelsize=9)
+        ax.spines[["top", "right"]].set_visible(False)
+        for spine in ax.spines.values():
+            spine.set_color("#bbbbbb")
+        ax.grid(True, color="#e0e0e0", lw=0.5)
 
-handles, labels = ax_T.get_legend_handles_labels()
-ax_T.legend(handles, labels, loc="upper right", fontsize=7.5, framealpha=0.7,
-            facecolor="white", edgecolor="#bbbbbb", title_fontsize=8)
+    ax_T, ax_Td, ax_RH, ax_ws, ax_wd = axes
+    LABEL_COLOR = "#333333"
 
-fig.suptitle(f"Radiosonde {_date_str}",
-             color="#111111", fontsize=14, fontweight="bold", y=0.98)
+    for i, (label, df) in enumerate(asc_data):
+        c  = asc_cmap(i / max(len(asc_data) - 1, 1))
+        kw = dict(color=c, lw=1.4, alpha=0.9, label=label + " ↑")
+        ax_T.plot(df["T_C"],  df["z_km"], **kw)
+        ax_Td.plot(df["Td_C"], df["z_km"], **kw)
+        ax_RH.plot(df["relative_humidity"], df["z_km"], **kw)
+        ax_ws.plot(df["wind_speed"], df["z_km"], **kw)
+        v = df[["wind_from_direction", "z_km"]].dropna()
+        ax_wd.scatter(v["wind_from_direction"], v["z_km"], color=c, s=1.0, alpha=0.8)
 
-plt.tight_layout(rect=[0, 0, 1, 0.96])
-plt.subplots_adjust(wspace=0.08)
+    for label, df in desc_data:
+        c  = hour_colour.get(label.split(":")[0], "black")
+        kw = dict(color=c, lw=1.1, alpha=0.8, linestyle="--", label=label + " ↓")
+        ax_T.plot(df["T_C"],  df["z_km"], **kw)
+        ax_Td.plot(df["Td_C"], df["z_km"], **kw)
+        ax_RH.plot(df["relative_humidity"], df["z_km"], **kw)
+        ax_ws.plot(df["wind_speed"], df["z_km"], **kw)
+        v = df[["wind_from_direction", "z_km"]].dropna()
+        ax_wd.scatter(v["wind_from_direction"], v["z_km"], color=c, s=1.0, alpha=0.6, marker="x")
 
-# ── save ──────────────────────────────────────────────────────────────────────
+    # axis formatting
+    ax_T.set_ylabel("Geopotential Height (km)", color=LABEL_COLOR, fontsize=10)
+    ax_T.set_ylim(0, 22)
+    ax_T.set_yticks(range(0, 23, 2))
 
-out_path = PLOT_DIR / "raso_profiles.png"
-fig.savefig(out_path, dpi=160, bbox_inches="tight", facecolor="white")
-plt.close(fig)
-print(f"Saved → {out_path}")
+    for ax, xlabel in zip(axes, [
+        "Temperature (°C)", "Dew-point (°C)", "Relative Humidity (%)",
+        "Wind Speed (m s⁻¹)", "Wind Direction (°)"
+    ]):
+        ax.set_xlabel(xlabel, color=LABEL_COLOR, fontsize=10)
+
+    ax_RH.set_xlim(0, 105)
+    ax_RH.set_xticks([0, 25, 50, 75, 100])
+    ax_wd.set_xlim(0, 360)
+    ax_wd.set_xticks([0, 90, 180, 270, 360])
+    ax_wd.set_xticklabels(["N", "E", "S", "W", "N"], fontsize=8)
+
+    for ax, title in zip(axes, ["Temperature", "Dew-point", "Rel. Humidity", "Wind Speed", "Wind Dir."]):
+        ax.set_title(title, color="#111111", fontsize=11, fontweight="bold", pad=6)
+
+    handles, labels = ax_T.get_legend_handles_labels()
+    ax_T.legend(handles, labels, loc="upper right", fontsize=7.5, framealpha=0.7,
+                facecolor="white", edgecolor="#bbbbbb", title_fontsize=8)
+
+    fig.suptitle(f"Radiosonde {_date_str}",
+                 color="#111111", fontsize=14, fontweight="bold", y=0.98)
+
+    plt.tight_layout(rect=[0, 0, 1, 0.96])
+    plt.subplots_adjust(wspace=0.08)
+
+    # ── save ──────────────────────────────────────────────────────────────────────
+
+    out_path = PLOT_DIR / "raso_profiles.png"
+    fig.savefig(out_path, dpi=160, bbox_inches="tight", facecolor="white")
+    plt.close(fig)
+    print(f"Saved → {out_path}")
 
 print('end')
