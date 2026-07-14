@@ -2,7 +2,8 @@
 compare_tropoe_hatpro.py
 ========================
 Compare TROPoe retrieval output (.nc) against HATPRO operational
-retrieval CSVs (temperature, humidity, met) for a single day.
+retrieval CSVs (temperature, humidity, met) for every date listed in the
+date-list CSV.
 
 Each dataset is plotted on its own native height grid -- no interpolation.
 
@@ -12,6 +13,8 @@ HATPRO CSVs
   - Temperature: 39 levels, values in Kelvin  (converted to degC for plotting)
   - Humidity:    39 levels, values in g/m3
   - Cadence:     10-minute
+  - NOTE: these are season-wide (one file per EOP, not per day) -- see
+    select_hatpro_window() usage in main() below.
 
 TROPoe NetCDF
   - temperature:  (time=48, height=55), units = degC
@@ -25,8 +28,7 @@ Outputs
   - comparison_timeseries.png     : T and q time series at selected heights
 
 NOTE (refactor): TROPoe loading and HATPRO CSV loading now come from the
-shared `tropoe_shared` package. Two things changed as a result -- see the
-comments near the top of main() for what and why.
+shared `tropoe_shared` package.
 """
 
 import os
@@ -37,6 +39,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
+import pandas as pd
 
 # --- shared module import -----------------------------------------------------
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -47,10 +50,7 @@ from TROPoe_outputs.functions.tropoe_io import load_tropoe
 from TROPoe_outputs.functions.hatpro_io import load_hatpro_profiles, load_hatpro_met, select_hatpro_window
 from TROPoe_outputs.functions.constants import HATPRO_HEIGHTS_KM
 
-# --- CONFIGURATION -------------------------------------------------------------
-
-# ToDo: loop over all dates
-datestring = '20250219'
+# --- CONFIGURATION (fixed, not per-date) ---------------------------------------
 
 # Heights (km) at which to plot time series -- snapped to nearest level in each dataset
 TIMESERIES_HEIGHTS_KM = [0.1, 0.5, 1.0, 2.0, 4.0]
@@ -58,32 +58,11 @@ TIMESERIES_HEIGHTS_KM = [0.1, 0.5, 1.0, 2.0, 4.0]
 _DATA = lookup.data_location
 assert os.path.isdir(_DATA), f"Data folder not found: {_DATA}"
 
-outdir = os.path.join(lookup.plot_save_location, "HATPRO_TROPoe_comparison/" + datestring + '/')
-os.makedirs(outdir, exist_ok=True)
+date_list_csv_path = lookup.date_list_location
+df = pd.read_csv(date_list_csv_path)
 
-# condition based on the month for sEOP or wEOP
-dt = datetime.strptime(datestring, '%Y%m%d')
-month = dt.month  # 2 (an int, not zero-padded)
-if month < 3:
-    assert 1 <= month <= 2
-    EOP = 'wEOP'
-else:
-    assert 6 <= month <= 7
-    EOP = 'sEOP'
-
-OUT_PREFIX = os.path.join(outdir, datestring + "_comparison")
-
-T_CSV      = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_temperature.csv")
-Q_CSV      = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_humidity.csv")
-MET_CSV    = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_met.csv")
-assert os.path.isfile(T_CSV), f"File not found: {T_CSV}"
-assert os.path.isfile(Q_CSV), f"File not found: {Q_CSV}"
-assert os.path.isfile(MET_CSV), f"File not found: {MET_CSV}"
-
-FILE_PATTERN = _DATA + 'TROPoe_output/' + datestring + '/' + 'tropoe_innsbruck.c1.' + datestring + '*'
-matches = glob.glob(FILE_PATTERN)
-assert len(matches) == 1
-NC_FILE = matches[0]
+df['datetime'] = pd.to_datetime(df['datetime'])
+datestrings = df['datetime'].dt.strftime('%Y%m%d').unique().tolist()
 
 # --- PLOT FUNCTIONS ------------------------------------------------------------
 
@@ -171,6 +150,10 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
 
 
 # --- MAIN ----------------------------------------------------------------------
+# Unchanged: still reads T_CSV, Q_CSV, MET_CSV, NC_FILE, OUT_PREFIX, datestring
+# as module-level globals. That's fine here because the loop below reassigns
+# those same globals before each call -- Python looks up globals at call
+# time, not at def time.
 
 def main():
     print("Loading TROPoe ...")
@@ -184,8 +167,8 @@ def main():
     hat_temp_k, hat_hum = load_hatpro_profiles(T_CSV, Q_CSV)
     hat_met = load_hatpro_met(MET_CSV)  # loaded for completeness; not plotted below
 
-    # NEW: T_CSV/Q_CSV cover the whole EOP season, not just this day -- narrow
-    # to the target date and align temp/hum onto matching timestamps.
+    # T_CSV/Q_CSV cover the whole EOP season, not just this day -- narrow to
+    # the target date and align temp/hum onto matching timestamps.
     windowed = select_hatpro_window(datestring, temp=hat_temp_k, hum=hat_hum)
     hat_temp_k, hat_hum = windowed['temp'], windowed['hum']
 
@@ -202,5 +185,62 @@ def main():
                     TIMESERIES_HEIGHTS_KM, OUT_PREFIX)
 
 
-if __name__ == "__main__":
-    main()
+# --- RUN: loop over every date in the date-list CSV -----------------------------
+
+skipped_dates = []
+
+for datestring in datestrings:
+
+    print(datestring)
+
+    outdir = os.path.join(lookup.plot_save_location, "HATPRO_TROPoe_comparison/TOC/" + datestring + '/')
+
+    # condition based on the month for sEOP or wEOP
+    dt = datetime.strptime(datestring, '%Y%m%d')
+    month = dt.month
+    if month < 3:
+        assert 1 <= month <= 2
+        EOP = 'wEOP'
+    else:
+        assert 6 <= month <= 7
+        EOP = 'sEOP'
+
+    OUT_PREFIX = os.path.join(outdir, datestring + "_comparison")
+
+    T_CSV = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_temperature.csv")
+    Q_CSV = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_humidity.csv")
+    MET_CSV = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_met.csv")
+
+    if not (os.path.isfile(T_CSV) and os.path.isfile(Q_CSV) and os.path.isfile(MET_CSV)):
+        print(f'  [!] HATPRO CSV(s) not found for {EOP}, skipping {datestring}')
+        skipped_dates.append((datestring, f'missing HATPRO CSV for {EOP}'))
+        continue
+
+    FILE_PATTERN = _DATA + 'TROPoe_output/' + datestring + '/' + 'tropoe_innsbruck.c1.' + datestring + '*'
+    matches = glob.glob(FILE_PATTERN)
+    if len(matches) != 1:
+        print(f'  [!] Expected exactly 1 TROPoe file for {datestring}, found {len(matches)}, skipping')
+        skipped_dates.append((datestring, f'{len(matches)} TROPoe file matches (expected 1)'))
+        continue
+    NC_FILE = matches[0]
+
+    # All checks passed -- only now create the output directory.
+    os.makedirs(outdir, exist_ok=True)
+
+    try:
+        main()
+    except Exception as e:
+        print(f'  [!] Error processing {datestring}, skipping: {e}')
+        skipped_dates.append((datestring, str(e)))
+        continue
+
+print('All done.')
+
+if skipped_dates:
+    print(f'\n{len(skipped_dates)} date(s) skipped:')
+    for d, reason in skipped_dates:
+        print(f'  - {d}: {reason}')
+else:
+    print('\nNo dates skipped -- every date processed successfully.')
+
+print('end')
