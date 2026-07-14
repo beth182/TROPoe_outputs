@@ -33,6 +33,8 @@ import matplotlib.dates as mdates
 # Point this at wherever tropoe_shared/ lives (e.g. inside TROPoe_outputs).
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+from TROPoe_outputs import lookup
+
 from TROPoe_outputs.functions.constants import H_MAX_T, H_MAX_WV
 from TROPoe_outputs.functions.tropoe_io import load_tropoe
 from TROPoe_outputs.functions.interpolation import align_datasets
@@ -469,13 +471,15 @@ def plot_diff_mean_profile(da, db_a, label_a, label_b, out_prefix):
 # CONFIGURATION — edit these
 # ══════════════════════════════════════════════════════════════════════════════
 
-datestring = '20250219'
+datestring = '20251201'
 
 # Path to your TROPoe output file
-FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/beth_' + datestring + '/tropoe/hatpro/tropoe_innsbruck.c1.' + datestring + '.000015.nc'
+# FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run/beth_' + datestring + '/tropoe/hatpro/tropoe_innsbruck.c1.' + datestring + '.000015.nc'
+FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run//dave_innit/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
 
 # Path to a second file for comparison (set to None to skip)
-FILE_B = None
+# FILE_B = None
+FILE_B = 'I:/User/Documents/Research/Running_TROPoe/Download from Dave/beth_saunders/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
 
 # Labels for the comparison plot
 LABEL_A = 'Beth'
@@ -483,11 +487,9 @@ LABEL_B = 'Dave'
 
 PROFILE_TIME = 12.0  # UTC hour for single-profile plot; None = midpoint of file
 
-# Data lives in test_day_data/ next to this script
-_HERE = os.path.dirname(os.path.abspath(__file__))
-
 # Make output directory if it doesn't exist
-outdir = _HERE + '/plots/' + datestring + '/'
+
+outdir = lookup.plot_save_location + 'TROPoe_output/TOC/' + datestring + '/'
 os.makedirs(outdir, exist_ok=True)
 
 OUT_PREFIX = outdir + datestring + '_tropoe'
