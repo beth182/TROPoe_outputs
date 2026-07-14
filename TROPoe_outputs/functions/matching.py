@@ -13,7 +13,7 @@ exists.
 
 import pandas as pd
 
-from .constants import MATCH_WINDOW_MIN
+from TROPoe_outputs.functions.constants import MATCH_WINDOW_MIN
 
 
 def find_nearest_time(available_times, target_time, window_min=MATCH_WINDOW_MIN):

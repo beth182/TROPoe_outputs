@@ -17,7 +17,7 @@ import numpy as np
 import netCDF4 as nc
 import pandas as pd
 
-from ..humidity import humidity_rh_temp_to_abs, humidity_mixing_ratio_to_abs
+from TROPoe_outputs.functions.humidity import humidity_rh_temp_to_abs, humidity_mixing_ratio_to_abs
 
 
 def _get(ds, name):
