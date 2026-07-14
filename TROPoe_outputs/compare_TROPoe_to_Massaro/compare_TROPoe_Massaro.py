@@ -23,85 +23,67 @@ Outputs
 -------
   - comparison_mean_profiles.png  : time-mean T and q profiles, 2 panels
   - comparison_timeseries.png     : T and q time series at selected heights
+
+NOTE (refactor): TROPoe loading and HATPRO CSV loading now come from the
+shared `tropoe_shared` package. Two things changed as a result -- see the
+comments near the top of main() for what and why.
 """
 
 import os
+import sys
+import glob
+
 import numpy as np
-import pandas as pd
-import netCDF4 as nc
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from datetime import datetime
+
+# --- shared module import -----------------------------------------------------
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from TROPoe_outputs import lookup
+
+from TROPoe_outputs.functions.tropoe_io import load_tropoe
+from TROPoe_outputs.functions.hatpro_io import load_hatpro_profiles, load_hatpro_met
+from TROPoe_outputs.functions.constants import HATPRO_HEIGHTS_KM
 
 # --- CONFIGURATION -------------------------------------------------------------
 
+# ToDo: loop over all dates
 datestring = '20250219'
-
-# HATPRO retrieval height grid [km above station]
-# from 26040823_CMP_TPC.NC altitude_layers (m -> km)
-HATPRO_HEIGHTS_KM = np.array([
-    0.000, 0.010, 0.030, 0.050, 0.075, 0.100, 0.125, 0.150,
-    0.200, 0.250, 0.325, 0.400, 0.475, 0.550, 0.625, 0.700,
-    0.800, 0.900, 1.000, 1.150, 1.300, 1.450, 1.600, 1.800,
-    2.000, 2.200, 2.500, 2.800, 3.100, 3.500, 3.900, 4.400,
-    5.000, 5.600, 6.200, 7.000, 8.000, 9.000, 10.000,
-])
 
 # Heights (km) at which to plot time series -- snapped to nearest level in each dataset
 TIMESERIES_HEIGHTS_KM = [0.1, 0.5, 1.0, 2.0, 4.0]
 
-# Data lives in test_day_data/ next to this script
-_HERE = os.path.dirname(os.path.abspath(__file__))
-_DATA = os.path.join(_HERE, "data/" + datestring + '/')
-
+_DATA = lookup.data_location
 assert os.path.isdir(_DATA), f"Data folder not found: {_DATA}"
 
-outdir = os.path.join(_HERE, "plots/" + datestring + '/')
-# Make output directory if it doesn't exist
+outdir = os.path.join(lookup.plot_save_location, "HATPRO_TROPoe_comparison/" + datestring + '/')
 os.makedirs(outdir, exist_ok=True)
 
-NC_FILE    = os.path.join(_DATA, "tropoe_innsbruck.c1." + datestring + ".000015.nc")
-T_CSV      = os.path.join(_DATA, "data_temperature.csv")
-Q_CSV      = os.path.join(_DATA, "data_humidity.csv")
-MET_CSV    = os.path.join(_DATA, "data_met.csv")
+# condition based on the month for sEOP or wEOP
+dt = datetime.strptime(datestring, '%Y%m%d')
+month = dt.month  # 2 (an int, not zero-padded)
+if month < 3:
+    assert 1 <= month <= 2
+    EOP = 'wEOP'
+else:
+    assert 6 <= month <= 7
+    EOP = 'sEOP'
+
 OUT_PREFIX = os.path.join(outdir, datestring + "_comparison")
 
-# --- DATA LOADING --------------------------------------------------------------
+T_CSV      = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_temperature.csv")
+Q_CSV      = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_humidity.csv")
+MET_CSV    = os.path.join(_DATA + 'HATPRO_processed_Massaro/TOC/', EOP + "_met.csv")
+assert os.path.isfile(T_CSV), f"File not found: {T_CSV}"
+assert os.path.isfile(Q_CSV), f"File not found: {Q_CSV}"
+assert os.path.isfile(MET_CSV), f"File not found: {MET_CSV}"
 
-def load_tropoe(nc_path):
-    """Load TROPoe temperature, water vapour, and height from NetCDF."""
-    ds      = nc.Dataset(nc_path)
-    base_dt = pd.to_datetime(datestring, format='%Y%m%d')
-    hours   = ds.variables["hour"][:]
-    times   = pd.to_datetime([base_dt + pd.Timedelta(hours=float(h)) for h in hours])
-    heights = ds.variables["height"][:].data          # km, (55,)
-    T_C     = ds.variables["temperature"][:].data     # degC, (time, height)
-    wv_gkg  = ds.variables["waterVapor"][:].data      # g/kg, (time, height)
-    P_mb = ds.variables["pressure"][:].data  # mb, (time, height)
-
-    Rd      = 287.05                                  # J kg-1 K-1
-    rho_dry = (P_mb * 100) / (Rd * (T_C + 273.15))  # kg/m3
-    wv_gm3  = wv_gkg * rho_dry                       # g/m3
-
-    ds.close()
-    return times, heights, T_C, wv_gm3
-
-
-def load_hatpro(t_path, q_path, met_path):
-    """Load HATPRO temperature and humidity CSVs."""
-    def read_csv(path):
-        df = pd.read_csv(path, comment="#", sep=";", parse_dates=["rawdate"])
-        df = df.rename(columns={"rawdate": "time"}).set_index("time").sort_index()
-        df.columns = [f"lev{i:02d}" for i in range(df.shape[1])]
-        return df
-
-    T_df = read_csv(t_path)   # K
-    q_df = read_csv(q_path)   # g/m3
-    met  = read_csv(met_path)
-
-    T_C = T_df - 273.15       # convert to degC
-
-    return T_df.index, T_C.values, q_df.values, met
-
+FILE_PATTERN = _DATA + 'TROPoe_output/' + datestring + '/' + 'tropoe_innsbruck.c1.' + datestring + '*'
+matches = glob.glob(FILE_PATTERN)
+assert len(matches) == 1
+NC_FILE = matches[0]
 
 # --- PLOT FUNCTIONS ------------------------------------------------------------
 
@@ -123,8 +105,8 @@ def plot_mean_profiles(trop_hgt, trop_T, trop_wv,
     ax1.grid(alpha=0.3)
 
     ax2.plot(np.nanmean(hat_q,   axis=0), hat_hgt,  "C1-o", ms=3, label="HATPRO (g/m3)")
-    ax2.plot(np.nanmean(trop_wv, axis=0), trop_hgt, "C0-s", ms=3, label="TROPoe (g/kg)")
-    ax2.set_xlabel("Water vapour")
+    ax2.plot(np.nanmean(trop_wv, axis=0), trop_hgt, "C0-s", ms=3, label="TROPoe (g/m3)")
+    ax2.set_xlabel("Water vapour (g/m3)")
     ax2.set_title("Humidity")
     ax2.legend()
     ax2.grid(alpha=0.3)
@@ -169,7 +151,7 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
         ax = axes[row, 1]
         ax.plot(hat_times,  hat_q[:, k_hat],    "C1-",  lw=1,  label=hat_label)
         ax.plot(trop_times, trop_wv[:, k_trop], "C0-o", ms=3,  label=trop_label)
-        ax.set_ylabel("q", fontsize=8)
+        ax.set_ylabel("q (g/m3)", fontsize=8)
         if row == 0:
             ax.set_title("Humidity")
         ax.legend(fontsize=8)
@@ -192,10 +174,31 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
 
 def main():
     print("Loading TROPoe ...")
-    trop_times, trop_hgt, trop_T, trop_wv = load_tropoe(NC_FILE)
+    # CHANGE 1: humidity in g/m3 no longer computed inline here -- it's
+    # already provided as data['abs_hum_from_mixing'] by the shared loader
+    # (same ideal-gas method: rho_dry = P / (Rd*T), then wv_gm3 = wv_gkg * rho_dry).
+    tro = load_tropoe(NC_FILE)
+    trop_times = tro['timestamps']
+    trop_hgt = tro['height']
+    trop_T = tro['temp']
+    trop_wv = tro['abs_hum_from_mixing']
+
+    # CHANGE 2: timestamps now come from the file's own base_time/time_offset
+    # (via the shared loader) rather than being reconstructed from `hour` +
+    # datestring. These should agree, but if you notice a timestamp offset
+    # versus what you had before, this is the place to look.
 
     print("Loading HATPRO ...")
-    hat_times, hat_T_C, hat_q, hat_met = load_hatpro(T_CSV, Q_CSV, MET_CSV)
+    # NOTE: this now uses the same HATPRO CSV reader as HATPRO_raso_visu.py
+    # (skiprows=1, index_col=0) instead of this script's old
+    # comment="#"/parse_dates=["rawdate"] approach. Worth a quick sanity
+    # check against a known day the first time you run this, in case the
+    # two approaches were producing subtly different timestamps.
+    hat_temp_k, hat_hum = load_hatpro_profiles(T_CSV, Q_CSV)
+    hat_met = load_hatpro_met(MET_CSV)  # loaded for completeness; not plotted below
+    hat_times = hat_temp_k.index
+    hat_T_C = hat_temp_k.values - 273.15  # HATPRO CSV is in Kelvin
+    hat_q = hat_hum.values  # already g/m3
 
     plot_mean_profiles(trop_hgt, trop_T, trop_wv,
                        HATPRO_HEIGHTS_KM, hat_T_C, hat_q,
