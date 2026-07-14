@@ -57,3 +57,53 @@ def load_hatpro_met(met_path):
     DataFrame  index=datetime, columns=[hs, ps, rf, ts, dd, ff] (as in file)
     """
     return _read_hatpro_csv(met_path)
+
+
+def select_hatpro_window(start, end=None, ndays=1, **hatpro_dfs):
+    """
+    Restrict one or more HATPRO DataFrames to a date/time window, and align
+    them to their common timestamps.
+
+    Some HATPRO files (e.g. season-wide operational retrieval CSVs covering
+    a whole wEOP/sEOP campaign) span far more than the single day you
+    actually want. Slicing each variable to the same window independently
+    can also leave them with slightly different timestamps if one variable
+    has small gaps the other doesn't -- this handles both problems at once.
+
+    Parameters
+    ----------
+    start      : str or datetime-like   start of window (inclusive). A plain
+                 datestring like '20250219' works via pd.Timestamp.
+    end        : str or datetime-like or None   end of window (exclusive).
+                 If None, computed as start + ndays.
+    ndays      : int   window length in days, used only if end is None
+    **hatpro_dfs : DataFrame   any number of named DataFrames sharing a
+                 datetime index, e.g. temp=hat_temp_k, hum=hat_hum
+
+    Returns
+    -------
+    dict[str, DataFrame]   same keys as input, each restricted to the
+    window and aligned to the intersection of all the given DataFrames'
+    indices (so e.g. windowed['temp'] and windowed['hum'] are guaranteed to
+    have matching timestamps, row for row).
+
+    Example
+    -------
+    >>> hat_temp_k, hat_hum = load_hatpro_profiles(T_CSV, Q_CSV)
+    >>> windowed = select_hatpro_window(datestring, temp=hat_temp_k, hum=hat_hum)
+    >>> hat_temp_k, hat_hum = windowed['temp'], windowed['hum']
+    """
+    if not hatpro_dfs:
+        raise ValueError("Provide at least one named HATPRO DataFrame.")
+
+    start = pd.Timestamp(start)
+    end = pd.Timestamp(end) if end is not None else start + pd.Timedelta(days=ndays)
+
+    windowed = {name: df.loc[(df.index >= start) & (df.index < end)]
+                for name, df in hatpro_dfs.items()}
+
+    common_idx = None
+    for df in windowed.values():
+        common_idx = df.index if common_idx is None else common_idx.intersection(df.index)
+
+    return {name: df.loc[common_idx] for name, df in windowed.items()}

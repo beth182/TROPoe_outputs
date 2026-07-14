@@ -44,7 +44,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 from TROPoe_outputs import lookup
 
 from TROPoe_outputs.functions.tropoe_io import load_tropoe
-from TROPoe_outputs.functions.hatpro_io import load_hatpro_profiles, load_hatpro_met
+from TROPoe_outputs.functions.hatpro_io import load_hatpro_profiles, load_hatpro_met, select_hatpro_window
 from TROPoe_outputs.functions.constants import HATPRO_HEIGHTS_KM
 
 # --- CONFIGURATION -------------------------------------------------------------
@@ -174,28 +174,21 @@ def plot_timeseries(trop_times, trop_hgt, trop_T, trop_wv,
 
 def main():
     print("Loading TROPoe ...")
-    # CHANGE 1: humidity in g/m3 no longer computed inline here -- it's
-    # already provided as data['abs_hum_from_mixing'] by the shared loader
-    # (same ideal-gas method: rho_dry = P / (Rd*T), then wv_gm3 = wv_gkg * rho_dry).
     tro = load_tropoe(NC_FILE)
     trop_times = tro['timestamps']
     trop_hgt = tro['height']
     trop_T = tro['temp']
     trop_wv = tro['abs_hum_from_mixing']
 
-    # CHANGE 2: timestamps now come from the file's own base_time/time_offset
-    # (via the shared loader) rather than being reconstructed from `hour` +
-    # datestring. These should agree, but if you notice a timestamp offset
-    # versus what you had before, this is the place to look.
-
     print("Loading HATPRO ...")
-    # NOTE: this now uses the same HATPRO CSV reader as HATPRO_raso_visu.py
-    # (skiprows=1, index_col=0) instead of this script's old
-    # comment="#"/parse_dates=["rawdate"] approach. Worth a quick sanity
-    # check against a known day the first time you run this, in case the
-    # two approaches were producing subtly different timestamps.
     hat_temp_k, hat_hum = load_hatpro_profiles(T_CSV, Q_CSV)
     hat_met = load_hatpro_met(MET_CSV)  # loaded for completeness; not plotted below
+
+    # NEW: T_CSV/Q_CSV cover the whole EOP season, not just this day -- narrow
+    # to the target date and align temp/hum onto matching timestamps.
+    windowed = select_hatpro_window(datestring, temp=hat_temp_k, hum=hat_hum)
+    hat_temp_k, hat_hum = windowed['temp'], windowed['hum']
+
     hat_times = hat_temp_k.index
     hat_T_C = hat_temp_k.values - 273.15  # HATPRO CSV is in Kelvin
     hat_q = hat_hum.values  # already g/m3
