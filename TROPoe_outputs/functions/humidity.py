@@ -25,7 +25,7 @@ g/m3 without going via RH.
 
 import numpy as np
 
-from constants import RV, ESAT0, T0, RD
+from .constants import RV, ESAT0, T0, RD
 
 
 # ══════════════════════════════════════════════════════════════════════════
