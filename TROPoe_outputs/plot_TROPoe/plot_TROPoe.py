@@ -18,10 +18,11 @@ plot_tropoe_comparison.py instead.
 
 import os
 import sys
-
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import glob
 
 # --- shared module import -----------------------------------------------------
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -155,34 +156,67 @@ def plot_profile_with_uncertainty(data, target_hour, out_prefix):
 # CONFIGURATION — edit these
 # ══════════════════════════════════════════════════════════════════════════════
 
-datestring = '20251201'
+date_list_csv_path = lookup.date_list_location
+df = pd.read_csv(date_list_csv_path)
 
-# Path to your TROPoe output file
-FILE_A = 'C:/Users/c7071147/Documents/TROPoe_run//dave_innit/tropoe/hatpro/tropoe.c1.20251201.000015.nc'
+df['datetime'] = pd.to_datetime(df['datetime'])
+datestrings = df['datetime'].dt.strftime('%Y%m%d').unique().tolist()
 
-PROFILE_TIME = 12.0  # UTC hour for single-profile plot; None = midpoint of file
+skipped_dates = []
 
-# Make output directory if it doesn't exist
-outdir = lookup.plot_save_location + 'TROPoe_output/TOC/' + datestring + '/'
-os.makedirs(outdir, exist_ok=True)
+for datestring in datestrings:
 
-OUT_PREFIX = outdir + datestring + '_tropoe'
+    print(datestring)
 
-# ══════════════════════════════════════════════════════════════════════════════
-# RUN
-# ══════════════════════════════════════════════════════════════════════════════
+    # Path to your TROPoe output file
+    # ToDo: change this to data location once the data from TROPoe runs has been moved to central location
+    FILE_PATTERN = 'C:/Users/c7071147/Documents/TROPoe_run/TOC/' + datestring + '/tropoe/hatpro/tropoe_innsbruck.c1.' + datestring + '*'
+    matches = glob.glob(FILE_PATTERN)
 
-print(f'Loading {FILE_A} ...')
-da = load_tropoe(FILE_A)
+    if not matches:  # or os.path.isfile(FILE), depending on where you landed with the glob fix
+        print(f'  [!] File not found, skipping: {FILE_PATTERN}')
+        skipped_dates.append((datestring, 'file not found'))
+        continue
 
-t_profile = PROFILE_TIME
-if t_profile is None:
-    t_profile = float(da['hour'][len(da['hour']) // 2])
-    print(f'Using midpoint time: {t_profile:.2f} UTC')
+    assert len(matches) == 1
+    FILE = matches[0]
 
-print('Single-file plots ...')
-plot_time_height(da, OUT_PREFIX)
-plot_lwp(da, OUT_PREFIX)
-plot_profile_with_uncertainty(da, t_profile, OUT_PREFIX)
+    PROFILE_TIME = 12.0  # UTC hour for single-profile plot; None = midpoint of file
+
+    # Make output directory if it doesn't exist
+    outdir = lookup.plot_save_location + 'TROPoe_output/TOC/' + datestring + '/'
+    os.makedirs(outdir, exist_ok=True)
+
+    OUT_PREFIX = outdir + datestring + '_tropoe'
+
+    # ══════════════════════════════════════════════════════════════════════════════
+    # RUN
+    # ══════════════════════════════════════════════════════════════════════════════
+
+    try:
+        da = load_tropoe(FILE)
+
+        t_profile = PROFILE_TIME
+        if t_profile is None:
+            t_profile = float(da['hour'][len(da['hour']) // 2])
+            print(f'Using midpoint time: {t_profile:.2f} UTC')
+
+        plot_time_height(da, OUT_PREFIX)
+        plot_lwp(da, OUT_PREFIX)
+        plot_profile_with_uncertainty(da, t_profile, OUT_PREFIX)
+
+    except Exception as e:
+        print(f'  [!] Error processing {datestring}, skipping: {e}')
+        skipped_dates.append((datestring, str(e)))
+        continue
+
+
+if skipped_dates:
+    print(f'\n{len(skipped_dates)} date(s) skipped:')
+    for d, reason in skipped_dates:
+        print(f'  - {d}: {reason}')
+else:
+    print('\nNo dates skipped -- a file was found and processed for every date.')
 
 print('All done.')
+print('end')
