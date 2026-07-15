@@ -216,7 +216,7 @@ for datestring in datestrings:
         skipped_dates.append((datestring, f'missing HATPRO CSV for {EOP}'))
         continue
 
-    FILE_PATTERN = _DATA + 'TROPoe_output/' + datestring + '/' + 'tropoe_innsbruck.c1.' + datestring + '*'
+    FILE_PATTERN = _DATA + 'TROPoe_output/TOC/' + datestring + '/' + 'tropoe_innsbruck.c1.' + datestring + '*'
     matches = glob.glob(FILE_PATTERN)
     if len(matches) != 1:
         print(f'  [!] Expected exactly 1 TROPoe file for {datestring}, found {len(matches)}, skipping')
