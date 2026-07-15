@@ -1,0 +1,4 @@
+wsl.exe --help
+wsl --list --online
+wsl
+wsl.exe --install -d Ubuntu-24.04

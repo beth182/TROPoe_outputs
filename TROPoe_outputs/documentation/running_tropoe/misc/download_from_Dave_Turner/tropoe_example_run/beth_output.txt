@@ -1,0 +1,416 @@
+{dave.turner@daturn-mac1:774} ./run_tropoe_ops.sh 20251201 /data/tropoe/hatpro/vip.txt prior.MIDLAT.nc 0 24 1 ${PWD} ${PWD} davidturner53/tropoe:v0.20
+Running TROPoe in operational mode, with
+                            Date (yyyymmdd) : 20251201
+                                   VIP file : /data/tropoe/hatpro/vip.txt
+                                 Prior file : prior.MIDLAT.nc
+                                 Start hour : 0
+                                   End hour : 24
+                               Verbose flag : 1
+  External data directory (mapped to /data) : /Users/dave.turner/incoming/tropoe_demo1
+  External temp directory (mapped to /tmp2) : /Users/dave.turner/incoming/tropoe_demo1
+                                 Image name : davidturner53/tropoe:v0.20
+Running image Docker
+WARNING: The requested image's platform (linux/amd64) does not match the detected host platform (linux/arm64/v8) and no specific platform was requested
+The length of yyyymmdd is 8
+  Reading input from the commandline
+    yyyymmdd is  20251201
+keep: Undefined variable.
+step: Undefined variable.
+step: Command not found.
+Running TROPoe on 20251201
+       vfile is  /data/tropoe/hatpro/vip.txt
+       pfile is  prior.MIDLAT.nc
+       shour is  0
+       ehour is  24
+     verbose is  1
+ 
+-------------------------------------------------------------------------
+---- TROPoe is a thermodynamic retrieval algorithm developed at NOAA ----
+---- Contacts are dave.turner, joshua.gebauer, tyler.bell (@noaa.gov) ---
+------- The code is provided on an "as-is" basis, with no warranty ------
+ 
+>>> Starting TROPoe retrieval for 20251201 (from 0.0 to 24.0 UTC) <<<
+  TROPoe package version: TROPoe-0.20
+  Software code version : 0.19-38-gf84b6e3
+  Reading the VIP file: /data/tropoe/hatpro/vip.txt
+  Using the prior file: prior.MIDLAT.nc
+  Setting the temporary directory for RT model runs to: /tmp/tropoe.751002
+ 
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_wat.gamma_sigma_0p100
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_ice.gamma_sigma_0p100
+ 
+  Working with the LBLRTM 
+    in the directory /home/tropoe/vip/src/lblrtm_v12.17/lblrtm
+    and the TAPE3 file TAPE3.350-1600cm-1.first_7_molecules
+ 
+  Using standard atmosphere: US Standard, 1976
+ 
+  Retrieving: T Q Liq_Cloud 
+ 
+  Retrieved profiles will have 55 levels (from VIP.zgrid)
+  Applying regularization factor to Tq prior covariance matrix (alpha=1.500e-05)
+  Attempting to use MWR as the master instrument
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251201*(cdf|nc)
+  Reading in MWR-zenith data
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251130*(cdf|nc)
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251201*(cdf|nc)
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251202*(cdf|nc)
+  Reading in CEIL data
+      Searching for files matching /data/ceil/*(ceil|ct25)*20251130*.(cdf|nc)
+      Searching for files matching /data/ceil/*(ceil|ct25)*20251201*.(cdf|nc)
+      Searching for files matching /data/ceil/*(ceil|ct25)*20251202*.(cdf|nc)
+    No CBH files found for this date
+  No ceil data -- using default cbh for entire period
+    Resetting some of IRS noise spectrum, which was below the noise floor
+    WARNING: mwr_time_delta is smaller than Tavg; consider resetting it in the VIP file to a larger value
+  Reading in external surface data
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251130*.(cdf|nc)
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251201*.(cdf|nc)
+      Searching for files matching /data/hatpro/*mwr00_l1_tb_p00*20251202*.(cdf|nc)
+    Warning: changing the surface pressure of some samples to the default "station_pres" in the VIP file
+    The prior dataset was recentered
+      Comment_on_recentering1: The WVMR profile prior recentered using a surface WVMR value of  3.44 g/kg
+      Comment_on_recentering2: The WVMR mean profile was scaled by a factor of  0.44
+      Comment_on_recentering3: The WVMR covariance was scaled by a factor of  0.66
+      Comment_on_recentering4: The temperature prior was recentered using the converve-RH method
+  Sample  0 at 0.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.007e+00
+    iter is  1, di2m is 7.201e+00, and RMS is 2.557e-01
+    iter is  2, di2m is 6.260e-01, and RMS is 4.224e-02
+    iter is  3, di2m is 1.105e-02, and RMS is 1.375e-02
+    Converged! (di2m << nY)
+  Sample  1 at 0.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.483e+00
+    iter is  1, di2m is 5.945e+01, and RMS is 9.684e-01
+    iter is  2, di2m is 2.523e+00, and RMS is 7.697e-01
+    iter is  3, di2m is 3.132e-01, and RMS is 7.282e-01
+    Converged! (di2m << nY)
+  Sample  2 at 1.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.098e+00
+    iter is  1, di2m is 1.033e+02, and RMS is 9.582e-01
+    iter is  2, di2m is 2.354e+00, and RMS is 7.717e-01
+    iter is  3, di2m is 2.377e-01, and RMS is 7.352e-01
+    Converged! (di2m << nY)
+  Sample  3 at 1.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.647e+00
+    iter is  1, di2m is 1.482e+02, and RMS is 9.183e-01
+    iter is  2, di2m is 2.349e+00, and RMS is 7.455e-01
+    iter is  3, di2m is 2.145e-01, and RMS is 7.195e-01
+    Converged! (di2m << nY)
+  Sample  4 at 2.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.052e+00
+    iter is  1, di2m is 1.643e+02, and RMS is 1.043e+00
+    iter is  2, di2m is 3.229e+00, and RMS is 7.982e-01
+    iter is  3, di2m is 2.997e-01, and RMS is 7.764e-01
+    Converged! (di2m << nY)
+  Sample  5 at 2.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.622e+00
+    iter is  1, di2m is 1.396e+02, and RMS is 9.403e-01
+    iter is  2, di2m is 2.119e+00, and RMS is 7.861e-01
+    iter is  3, di2m is 1.643e-01, and RMS is 7.642e-01
+    Converged! (di2m << nY)
+  Sample  6 at 3.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.285e+00
+    iter is  1, di2m is 1.118e+02, and RMS is 9.570e-01
+    iter is  2, di2m is 1.936e+00, and RMS is 8.227e-01
+    iter is  3, di2m is 1.857e-01, and RMS is 7.952e-01
+    Converged! (di2m << nY)
+  Sample  7 at 3.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.631e+00
+    iter is  1, di2m is 6.725e+01, and RMS is 8.509e-01
+    iter is  2, di2m is 1.326e+00, and RMS is 7.457e-01
+    iter is  3, di2m is 1.083e-01, and RMS is 7.273e-01
+    Converged! (di2m << nY)
+  Sample  8 at 4.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.216e+00
+    iter is  1, di2m is 4.389e+01, and RMS is 8.610e-01
+    iter is  2, di2m is 1.062e+00, and RMS is 7.666e-01
+    iter is  3, di2m is 1.467e-01, and RMS is 7.412e-01
+    Converged! (di2m << nY)
+  Sample  9 at 4.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.892e+00
+    iter is  1, di2m is 2.836e+01, and RMS is 8.318e-01
+    iter is  2, di2m is 7.285e-01, and RMS is 7.524e-01
+    iter is  3, di2m is 1.731e-01, and RMS is 7.251e-01
+    Converged! (di2m << nY)
+  Sample 10 at 5.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.775e+00
+    iter is  1, di2m is 2.078e+01, and RMS is 9.186e-01
+    iter is  2, di2m is 9.360e-01, and RMS is 8.293e-01
+    iter is  3, di2m is 1.397e-01, and RMS is 8.049e-01
+    Converged! (di2m << nY)
+  Sample 11 at 5.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.391e+00
+    iter is  1, di2m is 1.037e+01, and RMS is 8.593e-01
+    iter is  2, di2m is 8.227e-01, and RMS is 7.804e-01
+    iter is  3, di2m is 2.032e-01, and RMS is 7.555e-01
+    Converged! (di2m << nY)
+  Sample 12 at 6.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.878e+00
+    iter is  1, di2m is 2.412e+01, and RMS is 9.577e-01
+    iter is  2, di2m is 9.640e-01, and RMS is 8.742e-01
+    iter is  3, di2m is 3.020e-01, and RMS is 8.453e-01
+    Converged! (di2m << nY)
+  Sample 13 at 6.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.206e+00
+    iter is  1, di2m is 3.357e+01, and RMS is 1.000e+00
+    iter is  2, di2m is 1.424e+00, and RMS is 8.573e-01
+    iter is  3, di2m is 1.770e-01, and RMS is 8.163e-01
+    Converged! (di2m << nY)
+  Sample 14 at 7.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.512e+00
+    iter is  1, di2m is 4.647e+01, and RMS is 1.029e+00
+    iter is  2, di2m is 1.380e+00, and RMS is 8.825e-01
+    iter is  3, di2m is 4.009e-01, and RMS is 8.176e-01
+    Converged! (di2m << nY)
+  Sample 15 at 7.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 2.725e+00
+    iter is  1, di2m is 4.743e+01, and RMS is 1.164e+00
+    iter is  2, di2m is 1.744e+00, and RMS is 9.596e-01
+    iter is  3, di2m is 5.532e-01, and RMS is 8.469e-01
+    Converged! (di2m << nY)
+  Sample 16 at 8.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.739e+00
+    iter is  1, di2m is 1.008e+02, and RMS is 1.350e+00
+    iter is  2, di2m is 2.275e+00, and RMS is 1.104e+00
+    iter is  3, di2m is 7.470e-01, and RMS is 9.720e-01
+    Converged! (di2m << nY)
+  Sample 17 at 8.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.622e+00
+    iter is  1, di2m is 8.758e+01, and RMS is 1.428e+00
+    iter is  2, di2m is 1.910e+00, and RMS is 1.165e+00
+    iter is  3, di2m is 7.628e-01, and RMS is 1.007e+00
+    Converged! (di2m << nY)
+  Sample 18 at 9.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 3.991e+00
+    iter is  1, di2m is 1.123e+02, and RMS is 1.507e+00
+    iter is  2, di2m is 2.319e+00, and RMS is 1.213e+00
+    iter is  3, di2m is 8.846e-01, and RMS is 1.036e+00
+    Converged! (di2m << nY)
+  Sample 19 at 9.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.135e+00
+    iter is  1, di2m is 1.205e+02, and RMS is 1.566e+00
+    iter is  2, di2m is 2.545e+00, and RMS is 1.236e+00
+    iter is  3, di2m is 1.281e+00, and RMS is 1.009e+00
+    Converged! (di2m << nY)
+  Sample 20 at 10.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.395e+00
+    iter is  1, di2m is 1.275e+02, and RMS is 1.847e+00
+    iter is  2, di2m is 3.782e+00, and RMS is 1.443e+00
+    iter is  3, di2m is 2.031e+00, and RMS is 1.153e+00
+    Converged! (di2m << nY)
+  Sample 21 at 10.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.510e+00
+    iter is  1, di2m is 1.355e+02, and RMS is 2.007e+00
+    iter is  2, di2m is 3.509e+00, and RMS is 1.619e+00
+    iter is  3, di2m is 1.844e+00, and RMS is 1.329e+00
+    Converged! (di2m << nY)
+  Sample 22 at 11.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.133e+00
+    iter is  1, di2m is 1.435e+02, and RMS is 1.983e+00
+    iter is  2, di2m is 3.439e+00, and RMS is 1.621e+00
+    iter is  3, di2m is 2.482e+00, and RMS is 1.265e+00
+    Converged! (di2m << nY)
+  Sample 23 at 11.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.207e+00
+    iter is  1, di2m is 2.076e+02, and RMS is 1.450e+00
+    iter is  2, di2m is 3.855e+00, and RMS is 1.095e+00
+    iter is  3, di2m is 2.862e+00, and RMS is 8.316e-01
+    Converged! (di2m << nY)
+  Sample 24 at 12.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.229e+00
+    iter is  1, di2m is 2.337e+02, and RMS is 1.747e+00
+    iter is  2, di2m is 4.771e+00, and RMS is 1.350e+00
+    iter is  3, di2m is 3.004e+00, and RMS is 1.019e+00
+    Converged! (di2m << nY)
+  Sample 25 at 12.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.315e+00
+    iter is  1, di2m is 2.662e+02, and RMS is 2.013e+00
+    iter is  2, di2m is 4.867e+00, and RMS is 1.691e+00
+    iter is  3, di2m is 2.797e+00, and RMS is 1.320e+00
+    Converged! (di2m << nY)
+  Sample 26 at 13.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 4.639e+00
+    iter is  1, di2m is 2.965e+02, and RMS is 2.114e+00
+    iter is  2, di2m is 5.400e+00, and RMS is 1.746e+00
+    iter is  3, di2m is 3.110e+00, and RMS is 1.355e+00
+    Converged! (di2m << nY)
+  Sample 27 at 13.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 5.045e+00
+    iter is  1, di2m is 3.630e+02, and RMS is 2.242e+00
+    iter is  2, di2m is 5.222e+00, and RMS is 1.928e+00
+    iter is  3, di2m is 3.906e+00, and RMS is 1.466e+00
+    Converged! (di2m << nY)
+  Sample 28 at 14.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 5.947e+00
+    iter is  1, di2m is 5.330e+02, and RMS is 2.282e+00
+    iter is  2, di2m is 5.849e+00, and RMS is 1.968e+00
+    iter is  3, di2m is 3.240e+00, and RMS is 1.557e+00
+    Converged! (di2m << nY)
+  Sample 29 at 14.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 7.815e+00
+    iter is  1, di2m is 9.004e+02, and RMS is 2.072e+00
+    iter is  2, di2m is 1.028e+01, and RMS is 1.760e+00
+    iter is  3, di2m is 3.307e+00, and RMS is 1.372e+00
+    Converged! (di2m << nY)
+  Sample 30 at 15.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 9.295e+00
+    iter is  1, di2m is 1.157e+03, and RMS is 1.837e+00
+    iter is  2, di2m is 1.441e+01, and RMS is 1.389e+00
+    iter is  3, di2m is 3.863e+00, and RMS is 1.016e+00
+    Converged! (di2m << nY)
+  Sample 31 at 15.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.358e+01
+    iter is  1, di2m is 2.282e+03, and RMS is 1.818e+00
+    iter is  2, di2m is 1.990e+01, and RMS is 1.012e+00
+    iter is  3, di2m is 1.817e+00, and RMS is 8.278e-01
+    Converged! (di2m << nY)
+  Sample 32 at 16.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.600e+01
+    iter is  1, di2m is 3.118e+03, and RMS is 2.014e+00
+    iter is  2, di2m is 2.803e+01, and RMS is 1.007e+00
+    iter is  3, di2m is 2.006e+00, and RMS is 8.104e-01
+    Converged! (di2m << nY)
+  Sample 33 at 16.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.275e+01
+    iter is  1, di2m is 2.011e+03, and RMS is 1.941e+00
+    iter is  2, di2m is 2.233e+01, and RMS is 1.114e+00
+    iter is  3, di2m is 2.164e+00, and RMS is 8.881e-01
+    Converged! (di2m << nY)
+  Sample 34 at 17.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.359e+01
+    iter is  1, di2m is 2.267e+03, and RMS is 2.011e+00
+    iter is  2, di2m is 2.534e+01, and RMS is 1.119e+00
+    iter is  3, di2m is 2.160e+00, and RMS is 8.953e-01
+    Converged! (di2m << nY)
+  Sample 35 at 17.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.364e+01
+    iter is  1, di2m is 2.297e+03, and RMS is 2.064e+00
+    iter is  2, di2m is 2.569e+01, and RMS is 1.140e+00
+    iter is  3, di2m is 2.297e+00, and RMS is 9.115e-01
+    Converged! (di2m << nY)
+  Sample 36 at 18.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.266e+01
+    iter is  1, di2m is 1.968e+03, and RMS is 2.082e+00
+    iter is  2, di2m is 2.529e+01, and RMS is 1.175e+00
+    iter is  3, di2m is 2.305e+00, and RMS is 9.504e-01
+    Converged! (di2m << nY)
+  Sample 37 at 18.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.279e+01
+    iter is  1, di2m is 1.999e+03, and RMS is 2.189e+00
+    iter is  2, di2m is 2.853e+01, and RMS is 1.184e+00
+    iter is  3, di2m is 2.675e+00, and RMS is 9.426e-01
+    Converged! (di2m << nY)
+  Sample 38 at 19.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.276e+01
+    iter is  1, di2m is 1.990e+03, and RMS is 2.220e+00
+    iter is  2, di2m is 3.032e+01, and RMS is 1.194e+00
+    iter is  3, di2m is 3.137e+00, and RMS is 9.077e-01
+    Converged! (di2m << nY)
+  Sample 39 at 19.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.290e+01
+    iter is  1, di2m is 2.054e+03, and RMS is 2.145e+00
+    iter is  2, di2m is 2.608e+01, and RMS is 1.201e+00
+    iter is  3, di2m is 2.668e+00, and RMS is 9.618e-01
+    Converged! (di2m << nY)
+  Sample 40 at 20.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.300e+01
+    iter is  1, di2m is 2.065e+03, and RMS is 2.183e+00
+    iter is  2, di2m is 2.947e+01, and RMS is 1.202e+00
+    iter is  3, di2m is 2.577e+00, and RMS is 9.628e-01
+    Converged! (di2m << nY)
+  Sample 41 at 20.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.211e+01
+    iter is  1, di2m is 1.992e+03, and RMS is 2.505e+00
+    iter is  2, di2m is 3.338e+01, and RMS is 1.966e+00
+    iter is  3, di2m is 5.918e+00, and RMS is 1.435e+00
+    Converged! (di2m << nY)
+  Sample 42 at 21.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.301e+01
+    iter is  1, di2m is 2.214e+03, and RMS is 2.460e+00
+    iter is  2, di2m is 3.819e+01, and RMS is 1.863e+00
+    iter is  3, di2m is 4.984e+00, and RMS is 1.397e+00
+    Converged! (di2m << nY)
+  Sample 43 at 21.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.234e+01
+    iter is  1, di2m is 2.050e+03, and RMS is 2.443e+00
+    iter is  2, di2m is 3.295e+01, and RMS is 1.889e+00
+    iter is  3, di2m is 4.846e+00, and RMS is 1.420e+00
+    Converged! (di2m << nY)
+  Sample 44 at 22.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.119e+01
+    iter is  1, di2m is 1.707e+03, and RMS is 2.421e+00
+    iter is  2, di2m is 2.957e+01, and RMS is 1.929e+00
+    iter is  3, di2m is 5.321e+00, and RMS is 1.427e+00
+    Converged! (di2m << nY)
+  Sample 45 at 22.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.171e+01
+    iter is  1, di2m is 1.813e+03, and RMS is 2.398e+00
+    iter is  2, di2m is 3.313e+01, and RMS is 1.861e+00
+    iter is  3, di2m is 5.251e+00, and RMS is 1.382e+00
+    Converged! (di2m << nY)
+  Sample 46 at 23.0042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.235e+01
+    iter is  1, di2m is 2.047e+03, and RMS is 2.432e+00
+    iter is  2, di2m is 3.364e+01, and RMS is 1.903e+00
+    iter is  3, di2m is 5.170e+00, and RMS is 1.423e+00
+    Converged! (di2m << nY)
+  Sample 47 at 23.5042 UTC is being processed (cbh is 2.000)
+    Replacing pressure with External surface met station pressure
+    iter is  0, di2m is 9.000e+09, and RMS is 1.947e+01
+    iter is  1, di2m is 4.555e+03, and RMS is 2.474e+00
+    iter is  2, di2m is 4.737e+01, and RMS is 1.138e+00
+    iter is  3, di2m is 2.996e+00, and RMS is 8.780e-01
+    Converged! (di2m << nY)
+  Processing took 766.431353 seconds
+>>> TROPoe retrieval on 20251201 ended properly <<<
+--------------------------------------------------------------------
+ 
+

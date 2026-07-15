@@ -1,0 +1,174 @@
+C:\Users\c7071147\Downloads\test
+
+/mnt/c/Users/c7071147/Downloads/test
+
+
+bash run_tropoe_ops.sh 20230927 VIPfile priorFile 0 24 1 /mnt/c/TROPoe/InputData /mnt/c/TROPoe/InputData/tmp davidturner53/tropoe:latest
+
+
+
+
+
+podman run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=prior.MIDLAT.nc " -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/home/eric/mwr_l12l2/mwr_l12l2/data/tropoe/node_0:/data" davidturner53/tropoe:latest
+
+
+
+bash run_tropoe_ops.sh 20230425 vip.txt prior.MIDLAT.nc 0 24 1 /mnt/c/Users/c7071147/Downloads/test /mnt/c/Users/c7071147/Downloads/test davidturner53/tropoe:latest
+
+
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/mnt/c/Users/c7071147/Downloads/test/vip.txt" -e "pfile=/mnt/c/Users/c7071147/Downloads/test/prior.MIDLAT.nc " -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test/" davidturner53/tropoe:latest
+
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/mnt/c/Users/c7071147/Downloads/test/vip.txt" -e "pfile=/mnt/c/Users/c7071147/Downloads/test/prior.MIDLAT.nc " -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test/" tropoe:old
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/mnt/c/Users/c7071147/Downloads/test/vip.txt" -e "pfile=/mnt/c/Users/c7071147/Downloads/test/prior.MIDLAT.nc " -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test/" davidturner53/tropoe:v0.18.2
+
+
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=/data/prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:v0.18.2
+
+
+
+THIS WORKS, BUT:
+
+docker run -it -u root --rm \
+  -e "yyyymmdd=20230425" \
+  -e "vfile=/data/vip.txt" \
+  -e "pfile=/data/prior.MIDLAT.nc" \
+  -e "shour=13" \
+  -e "ehour=13.5" \
+  -e "verbose=1" \
+  -v "/mnt/c/Users/c7071147/Downloads/test:/data" \
+  davidturner53/tropoe:latest
+
+
+
+
+
+OUTPUT:
+
+
+c7071147@C707-PC-74C6:/mnt/c/Windows/System32$ docker run -it -u root --rm \
+  -e "yyyymmdd=20230425" \
+  -e "vfile=/data/vip.txt" \
+  -e "pfile=/data/prior.MIDLAT.nc" \
+  -e "shour=13" \
+  -e "ehour=13.5" \
+  -e "verbose=1" \
+  -v "/mnt/c/Users/c7071147/Downloads/test:/data" \
+  davidturner53/tropoe:latest
+The length of yyyymmdd is 8
+  Reading input from the commandline
+    yyyymmdd is  20230425
+Running TROPoe on 20230425
+       vfile is  /data/vip.txt
+       pfile is  /data/prior.MIDLAT.nc
+       shour is  13
+       ehour is  13.5
+     verbose is  1
+
+-------------------------------------------------------------------------
+---- TROPoe is a thermodynamic retrieval algorithm developed at NOAA ----
+---- Contacts are dave.turner, joshua.gebauer, tyler.bell (@noaa.gov) ---
+------- The code is provided on an "as-is" basis, with no warranty ------
+
+>>> Starting TROPoe retrieval for 20230425 (from 13.0 to 13.5 UTC) <<<
+  TROPoe version: TROPoe-0.18
+  Reading the VIP file: /data/vip.txt
+  Using the prior file: /data/prior.MIDLAT.nc
+  Setting the temporary directory for RT model runs to: /tmp/tropoe.254130
+
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_wat.gamma_sigma_0p100
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_ice.gamma_sigma_0p100
+
+  Working with the LBLRTM version v12.1
+    in the directory /home/tropoe/vip/src/lblrtm_v12.1/lblrtm
+    and the TAPE3 file tape3.data
+
+  Using standard atmosphere: US Standard, 1976
+
+  Retrieving: T Q Liq_Cloud
+
+Traceback (most recent call last):
+  File "/home/tropoe/vip/src/tropoe/TROPoe.py", line 464, in <module>
+    z  = fid.variables['height'][:]
+
+
+
+
+
+
+
+
+
+
+
+
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=/data/prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:v0.18.2
+
+
+
+
+c7071147@C707-PC-74C6:~$ docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=/data/prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:v0.18.2
+The length of yyyymmdd is 8
+  Reading input from the commandline
+    yyyymmdd is  20230425
+Running TROPoe on 20230425
+       vfile is  /data/vip.txt
+       pfile is  /data/prior.MIDLAT.nc
+       shour is  13
+       ehour is  13.5
+     verbose is  1
+
+-------------------------------------------------------------------------
+---- TROPoe is a thermodynamic retrieval algorithm developed at NOAA ----
+---- Contacts are dave.turner, joshua.gebauer, tyler.bell (@noaa.gov) ---
+------- The code is provided on an "as-is" basis, with no warranty ------
+
+>>> Starting TROPoe retrieval for 20230425 (from 13.0 to 13.5 UTC) <<<
+  TROPoe version: TROPoe-0.18.2
+  Reading the VIP file: /data/vip.txt
+  Using the prior file: /data/prior.MIDLAT.nc
+  Setting the temporary directory for RT model runs to: /tmp/tropoe.942099
+
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_wat.gamma_sigma_0p100
+  Reading: /home/tropoe/vip/src/input/ssp_db_files/ssp_db.mie_ice.gamma_sigma_0p100
+
+  Working with the LBLRTM version v12.1
+    in the directory /home/tropoe/vip/src/lblrtm_v12.1/lblrtm
+    and the TAPE3 file tape3.data
+
+  Using standard atmosphere: US Standard, 1976
+
+  Retrieving: T Q Liq_Cloud
+
+Traceback (most recent call last):
+  File "/home/tropoe/vip/src/tropoe/TROPoe.py", line 464, in <module>
+    z  = fid.variables['height'][:]
+KeyError: 'height'
+
+
+
+
+docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=/data/prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:latest
+
+c7071147@C707-PC-74C6:~$ docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=/data/prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:latest
+The length of yyyymmdd is 8
+  Reading input from the commandline
+    yyyymmdd is  20230425
+keep: Undefined variable.
+step: Undefined variable.
+step: Command not found.
+app: Undefined variable.
+
+
+KeyError: 'height'
+
+
+ docker run -it -u root --rm -e "yyyymmdd=20230425" -e "vfile=/data/vip.txt" -e "pfile=prior.MIDLAT.nc" -e "shour=13" -e "ehour=13.5" -e "verbose=1" -v "/mnt/c/Users/c7071147/Downloads/test:/data" davidturner53/tropoe:v0.18.2
+
+
+
+bernhard.pospichal@uni-koeln.de or tmarke@meteo.uni-koeln.de

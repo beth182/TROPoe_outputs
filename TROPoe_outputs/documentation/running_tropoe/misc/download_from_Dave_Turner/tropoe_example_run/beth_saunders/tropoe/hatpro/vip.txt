@@ -1,0 +1,54 @@
+tres = 30 	         # Temporal resolution [min], 0 implies maximum (native) temporal resolution
+avg_instant = -1     # A flag to specify -1:avg with no sqrt(N), 0:avg with sqrt(N), or 1:instantaneous
+
+station_lat = 50.99  # Station latitude [degN]; if negative get value from IRS/MWR data file
+station_lon =  6.41  # Station longitude [degE]; if negative get value from IRS/MWR data file
+station_alt =   111. # Station altitude [m MSL]; if negative get value from IRS/MWR data file
+station_pres = 980.0 # Station pressure [mb]; will be only be used if there is no other surface pressure input
+
+irs_type = -1 	# 0- output, options, and stop, 1 - ARM AERI data, 2 - dmv2cdf AERI data (C1_rnc.cdf and _sum.cdf), 3 - dmv2ncdf (C1.RNC.cdf and .SUM.cdf), 5- ASSIST, -1 - MWR data is to be used as MASTER dataset (no IRS data being read in)
+
+mwr_type = 3 		        # 3 - Univ of Cologne format
+mwr_path = /data/hatpro 	# Path to the MWR data
+mwr_rootname = mwr00_l1_tb_p00 	# Rootname of the MWR data files
+mwr_elev_field = ele 	    # Name of the scene mirror elevation field; use 'none' if all data are zenith
+mwr_freq_field = freq_sb 	# Name of the frequency field needed if mwr_type >= 2
+mwr_n_tb_fields = 14	    # Number of fields to read in
+mwr_tb_field_names = tb     # Comma separated list of field names for the Tb fields
+mwr_tb_field1_tbmax = 100.0 # Maximum value [K] in the first Tb field, used for QC
+mwr_tb_freqs = 22.24, 23.04, 23.84, 25.44, 26.24, 27.84, 31.4, 51.26, 52.28, 53.86, 54.94, 56.66, 57.3, 58.0
+mwr_tb_noise =   0.3,   0.3,   0.3,   0.3,   0.3,   0.3,  0.3,  1.00,  1.00,  0.50,  0.40,   0.3,  0.3,  0.2
+mwr_tb_bias  =   0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,   0.0,   0.0,   0.0,   0.0,   0.0,  0.0,  0.0
+mwr_time_delta = 0.083  # The maximum amount of time [hours] that the MWR zenith obs must be to the sampling time to be used 
+
+ext_sfc_path = /data/hatpro 	# Path to the external surface met data
+ext_sfc_rootname = mwr00_l1_tb_p00
+ext_sfc_time_format = 2         # Units
+ext_sfc_temp_type = 1 		    # External surface temperature met data type: 0-none, 1-ARM met data [degC], 2-NCAR ISFS data [degC], 3-CLAMPS MWR met data [degC]
+ext_sfc_temp_fieldname = ta     # Name of the temperature field
+ext_sfc_temp_units = 2          # Units (1-degC, 2-degK)
+ext_sfc_temp_random_error = 0.5 # Random error for the surface temperature measurement [degC]
+ext_sfc_wv_type = 1             # External surface water vapor met data type: 0-none, 1-ARM met data [g/kg], 2-NCAR ISFS data [g/kg], 3-CLAMPS MWR met data [g/kg]
+ext_sfc_wv_fieldname = hur      # Name of the water vapor field
+ext_sfc_wv_units = 2            # Units (1-%RH, 2-fraction)
+ext_sfc_rh_random_error = 3.0 	# Random error for the surface relative humidity measurement [%], which is used with the ext_sfc_random_temp_error to get the uncertainty in WVMR
+ext_sfc_relative_height = 0 	# Relative height of the met station to the IRS zenith port [m]; note if met station is below IRS port then the value should be negative
+ext_sfc_pres_type = 1 		    # 0 - Use the internal IRS pressure sensor for psfc; 1-ARM met data, 2-NCAR ISFS data, 3-CLAMPS MWR met data
+ext_sfc_pres_fieldname = pa     # Name of pressure field
+ext_sfc_pres_units = 3          # Units (1-kPa, 2-hPa, 3-Pa)
+
+cbh_type = 1 			# 0 - output options and stop, 1 - VCEIL, 2 - Gregs ASOS CBH file, 3 - CLAMPS DLfp data, 4 - ARM dlprofwstats data
+cbh_path = /data/ceil 		# Path to the CBH data
+cbh_default_ht = 2.0 		# Default CBH height [km AGL], if no CBH data found 
+
+output_rootname = tropoe.c1 		# String with the rootname of the output file
+output_path = /data/tropoe/hatpro   # Path where the output file will be placed
+output_clobber = 1 				    # 0 - do not clobber preexisting output files, 1 - clobber them, 2 - append to the last file of this day
+
+recenter_prior = 1 		# 0 - do not recenter, 1 - Recenter 
+
+# An unlimited number of additional global attributes you can manually use to document your dataset
+globatt_Site = JOYCE Site in Juelich, Germany
+globatt_Instrument = TOPHAT Hatpro 
+globatt_Dataset_contact = Dave Turner, NOAA, dave.turner@noaa.gov
+
